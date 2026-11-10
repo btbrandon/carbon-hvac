@@ -1,0 +1,58 @@
+{
+  "algo": "ppo",
+  "seed": 0,
+  "steps": 800000,
+  "tag": "sweep_lamK1",
+  "train_minutes": 3.22,
+  "env": {
+    "split": "train",
+    "control_minutes": 15,
+    "n_actions": 5,
+    "comfort_low": 23.0,
+    "comfort_high": 26.0,
+    "lam_energy": 0.0,
+    "lam_carbon": 1.0,
+    "lam_cost": 0.5,
+    "lam_comfort": 1,
+    "comfort_penalty": "linear",
+    "obs_ci": true,
+    "obs_price": true,
+    "obs_time": true,
+    "forecast_hours": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "forecast_noise": 0.0,
+    "occ_flip_prob": 0.0,
+    "reward_occupancy": "true",
+    "price_regime": "real",
+    "ci_regime": "real",
+    "ci_shift_hours": 0.0,
+    "data_source": "synthetic",
+    "data_seed": 0,
+    "thermal": {
+      "R": 0.4,
+      "C": 15.0,
+      "p_max": 14.0,
+      "cop_nominal": 3.5,
+      "cop_slope": 0.08,
+      "cop_min": 2.5,
+      "cop_max": 4.5
+    }
+  },
+  "hyperparams": {
+    "n_steps": "384",
+    "batch_size": "256",
+    "n_epochs": "10",
+    "learning_rate": "0.0003",
+    "gamma": "0.99",
+    "gae_lambda": "0.95",
+    "clip_range": "0.2",
+    "ent_coef": "0.01",
+    "vf_coef": "0.5",
+    "max_grad_norm": "0.5",
+    "policy_kwargs": "{'net_arch': [64, 64]}"
+  }
+}

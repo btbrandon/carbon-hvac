@@ -55,6 +55,13 @@ def main():
     summary = df.groupby("controller", sort=False)[COLS].mean()
     print(summary.round(3).to_string())
 
+    # reference lines for the learning-curve plot: same 16 training days as scripts/train.py
+    train_env = CarbonHVACEnv(EnvConfig(split="train"))
+    curve_eps = eval_episodes("train", n=16, seed=99)
+    ref = pd.concat([evaluate(train_env, c, curve_eps) for c in (OccupancySetback(), heuristic, Oracle())])
+    ref.groupby("controller", sort=False)[["reward"]].mean().reset_index().to_csv(
+        "results/baselines_train_curve_ref.csv", index=False)
+
 
 if __name__ == "__main__":
     main()
