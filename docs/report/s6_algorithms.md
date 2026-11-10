@@ -46,12 +46,12 @@ where c_t is the per-step cost (the negative reward) and f_t the 1R1C transition
 - **Grid:** V is computed on a 401-point temperature grid over [15, 35] °C at 0.05 °C, with linear interpolation between grid points.
 - **Execution:** the oracle acts by one-step lookahead from the exact current temperature, so interpolation is the only approximation.
 - **Shared code:** dynamics and cost come from the same function the environment uses, so the oracle optimises exactly the objective every controller is scored on.
-- **Checks:** unit tests confirm it never loses to any rule-based controller and that its predicted value matches the realised return within 2%.
+- **Checks:** unit tests confirm, on sampled test days, that it never loses to a rule-based controller and that its predicted value matches the realised return within 2%. On all 92 test days it scores above every tuned rule on average.
 - **Decomposition:** two variants each remove one piece of foresight. One plans with a flat CI; the other plans with the nominal 08:00–18:00 schedule instead of true occupancy. Both are scored on the true outcome, which lets us attribute the oracle's advantage (§8).
 
 ## 6.4 Hyperparameter tuning protocol
 
-A learned controller is only meaningfully better than a rule if both have been tuned with comparable care. Our first results compared default-setting PPO against a rule with only its CI threshold tuned, and overstated PPO's carbon advantage roughly threefold (11.3% vs 3.7%). We therefore tuned every controller under the same protocol:
+A learned controller is only meaningfully better than a rule if both have been tuned with comparable care. Our first results compared default-setting PPO against a carbon heuristic with only two of its settings tuned, and overstated PPO's carbon advantage roughly threefold (11.3% vs 3.7%). We therefore tuned every controller under the same protocol:
 
 - **Selection data:** the same 60 fixed days from the training period (January–September) for every controller. The test period (October–December) is never used for any choice.
 - **Objective:** mean daily reward, exactly the quantity PPO maximises.
