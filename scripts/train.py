@@ -81,6 +81,9 @@ def main():
     ap.add_argument("--tag", default="main")
     ap.add_argument("--set", nargs="*", default=[], help="EnvConfig overrides, key=value")
     ap.add_argument("--eval-every", type=int, default=15_000)
+    ap.add_argument("--hp", nargs="*", default=[], help="algorithm hyperparameter overrides, key=value (net=128 sets net_arch)")
+    ap.add_argument("--val", action="store_true", help="score on the 60 training days used to tune the rules (val.csv)")
+    ap.add_argument("--no-test", action="store_true", help="skip the test-period evaluation (tuning runs)")
     args = ap.parse_args()
 
     torch.set_num_threads(1)
@@ -88,9 +91,18 @@ def main():
     out = Path("results/runs") / args.tag / f"{args.algo}_s{args.seed}"
     out.mkdir(parents=True, exist_ok=True)
 
+    Algo, kw = (PPO, dict(PPO_KW)) if args.algo == "ppo" else (DQN, dict(DQN_KW))
+    for pair in args.hp:
+        k, v = pair.split("=", 1)
+        v = yaml.safe_load(v)
+        if k == "net":
+            kw["policy_kwargs"] = dict(net_arch=[v, v])
+        elif k in kw:
+            kw[k] = v
+        else:
+            raise SystemExit(f"unknown hyperparameter {k!r}")
     venv = make_vec_env(lambda: CarbonHVACEnv(cfg), n_envs=N_ENVS[args.algo], seed=args.seed)
-    venv = VecNormalize(venv, norm_obs=False, norm_reward=True, gamma=0.99)
-    Algo, kw = (PPO, PPO_KW) if args.algo == "ppo" else (DQN, DQN_KW)
+    venv = VecNormalize(venv, norm_obs=False, norm_reward=True, gamma=kw["gamma"])
     model = Algo("MlpPolicy", venv, seed=args.seed, verbose=0, device="cpu", **kw)
 
     cb = CurveCallback(cfg, args.eval_every)
@@ -105,17 +117,25 @@ def main():
     models_dir.mkdir(parents=True, exist_ok=True)
     model.save(models_dir / f"{args.algo}_s{args.seed}.zip")
 
-    test_env = CarbonHVACEnv(EnvConfig(**{**cfg.__dict__, "split": "test"}))
-    test = evaluate(test_env, greedy(model), eval_episodes("test"), name=args.algo)
-    test["seed"], test["tag"] = args.seed, args.tag
-    test.to_csv(out / "test.csv", index=False)
+    if args.val:
+        val = evaluate(cb.env, greedy(model), eval_episodes("train", n=60, seed=0), name=args.algo)
+        val["seed"], val["tag"] = args.seed, args.tag
+        val.to_csv(out / "val.csv", index=False)
+    if args.no_test:
+        test = val if args.val else pd.DataFrame(cb.rows[-1:])
+    else:
+        test_env = CarbonHVACEnv(EnvConfig(**{**cfg.__dict__, "split": "test"}))
+        test = evaluate(test_env, greedy(model), eval_episodes("test"), name=args.algo)
+        test["seed"], test["tag"] = args.seed, args.tag
+        test.to_csv(out / "test.csv", index=False)
 
     meta = {"algo": args.algo, "seed": args.seed, "steps": args.steps, "tag": args.tag,
             "train_minutes": round(train_min, 2), "env": cfg.to_dict(),
-            "hyperparams": {k: str(v) for k, v in kw.items()}}
+            "hp_overrides": args.hp, "hyperparams": {k: str(v) for k, v in kw.items()}}
     (out / "config.json").write_text(json.dumps(meta, indent=2, default=str))
     s = test[["reward", "kg_co2", "kwh", "comfort_dh", "viol_pct"]].mean()
-    print(f"[{args.tag} {args.algo} s{args.seed}] {train_min:.1f} min | test " +
+    split = "val" if args.no_test else "test"
+    print(f"[{args.tag} {args.algo} s{args.seed}] {train_min:.1f} min | {split} " +
           " ".join(f"{k}={v:.3f}" for k, v in s.items()))
 
 

@@ -35,6 +35,7 @@ LABEL = {"fixed_setpoint": "Fixed setpoint (24 °C)", "setback_24": "Setback, 24
          "setback_mc": "Setback, tuned (≤1% viol.)"}
 TUNED = json.loads((RES / "baselines_tuned.json").read_text())
 BEST_RULE = TUNED["best_rule"]
+PPO_TAG = "main_tuned" if (RES / "runs/main_tuned").exists() else "main"  # selected by scripts/select_ppo.py
 # reference palette (light): blue, orange, aqua; baselines in neutral ink
 C = {"ppo": "#2a78d6", "dqn": "#eb6834", "heur": "#1baf7a", "ink": "#0b0b0b", "muted": "#8a8984", "grid": "#e6e5e0"}
 
@@ -111,7 +112,8 @@ def headline(baselines, learned):
 def fig_learning_curves():
     fig, ax = plt.subplots(figsize=(6.5, 3.8))
     for algo in ("ppo", "dqn"):
-        curves = [pd.read_csv(f) for f in sorted((RES / "runs/main").glob(f"{algo}_s*/curve.csv"))]
+        tag = PPO_TAG if algo == "ppo" else "main"
+        curves = [pd.read_csv(f) for f in sorted((RES / "runs" / tag).glob(f"{algo}_s*/curve.csv"))]
         if not curves:
             continue
         steps = curves[0].steps.values
@@ -181,7 +183,7 @@ def fig_pareto(baselines):
 
 
 def fig_ablations():
-    tags = [("main", "Full PPO"), ("abl_no_ci", "No CI"), ("abl_no_forecast", "No forecasts"),
+    tags = [("main", "Full PPO (default hp)"), ("abl_no_ci", "No CI"), ("abl_no_forecast", "No forecasts"),
             ("abl_no_time", "No time features"), ("abl_dt60", "Δt = 1 h")]
     rows = []
     for tag, label in tags:
@@ -218,7 +220,7 @@ def fig_ablations():
 
 def fig_day_trace(day=None):
     from stable_baselines3 import PPO
-    path = RES / "models/main/ppo_s0.zip"
+    path = RES / f"models/{PPO_TAG}/ppo_s0.zip"
     if not path.exists():
         return
     model = PPO.load(path, device="cpu")
@@ -245,7 +247,7 @@ def fig_day_trace(day=None):
     ax.step(h, ppo.t_in, where="post", color=C["ppo"], label="PPO")
     ax.step(h, hr.t_in, where="post", color=C["heur"], label=LABEL[BEST_RULE])
     ax.set_ylabel("Indoor temp (degC)")
-    ax.legend(loc="upper right", ncol=2)
+    ax.legend(loc="lower left", ncol=2)
     ax.set_title(f"Test day {day}: shaded = occupied, green band = comfort", loc="left")
     ax = axes[1]
     ax.step(h, ppo.energy_kwh * 4, where="post", color=C["ppo"])
@@ -264,7 +266,8 @@ def main():
     FIG.mkdir(parents=True, exist_ok=True)
     TAB.mkdir(parents=True, exist_ok=True)
     baselines = pd.read_csv(RES / "baselines.csv")
-    learned = load_runs("main")
+    learned = pd.concat([load_runs("main").query("controller == 'dqn'"),
+                         load_runs(PPO_TAG).query("controller == 'ppo'")])
     summary = summarise(baselines, learned)
     main_table(summary)
     hl = headline(baselines, learned)
