@@ -14,6 +14,8 @@ style: |
   .muted { color: #52514e; font-size: 20px; }
   .big { font-size: 64px; font-weight: 700; color: #2a78d6; line-height: 1; }
   .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; align-items: start; }
+  .wide-left { grid-template-columns: 1.35fr 1fr; gap: 28px; }
+  .wide-left li { font-size: 23px; }
   img { display: block; margin: 0 auto; }
   footer { color: #8a8984; font-size: 16px; }
 footer: CS4246 Group 23 · Carbon-Aware Smart Building Energy Controller
@@ -158,7 +160,7 @@ Price: 0.10 °C·h/day of discomfort, mostly 17:00–18:30 and the 13:00–15:00
 
 ## Learning: PPO is stable, DQN is noisy
 
-![w:900](../../results/figures/learning_curves.png)
+![h:440](../../results/figures/learning_curves.png)
 
 PPO passes the carbon heuristic at ~300k steps; all 5 seeds land within ±1.2% of each other on test carbon. DQN reaches a similar level but collapses intermittently.
 
@@ -168,7 +170,7 @@ PPO passes the carbon heuristic at ~300k steps; all 5 seeds land within ±1.2% o
 
 ## What did PPO learn? Ride the top of the comfort band
 
-![w:820](../../results/figures/day_trace.png)
+![h:560](../../results/figures/day_trace.png)
 
 <!-- Sean: PPO holds ~25.7 °C, no pre-cooling. Heuristic over-cools in low-CI dips; with τ = 6 h that "stored" cooling leaks back through the walls. -->
 
@@ -176,10 +178,10 @@ PPO passes the carbon heuristic at ~300k steps; all 5 seeds land within ±1.2% o
 
 ## Is it really carbon-aware? Mostly not, and here is how we know
 
-<div class="cols">
+<div class="cols wide-left">
 <div>
 
-![w:560](../../results/figures/ablations.png)
+![w:720](../../results/figures/ablations.png)
 
 </div>
 <div>
@@ -199,9 +201,9 @@ PPO passes the carbon heuristic at ~300k steps; all 5 seeds land within ±1.2% o
 
 ## The trade-off is a choice, not a fact
 
-![w:760](../../results/figures/pareto.png)
+![h:430](../../results/figures/pareto.png)
 
-λ_K (comfort weight) sweeps from 4.6 kg at 8 °C·h/day to 9.7 kg at ≈0. At strict comfort (λ_K ≥ 50) **the heuristic is not beaten**.
+λ_K sweeps from 4.6 kg at 8 °C·h/day to 9.7 kg at ≈0 discomfort. At strict comfort (λ_K = 50) **the heuristic is not beaten**.
 
 <!-- Sean presents; Patrick links to RAI -->
 
