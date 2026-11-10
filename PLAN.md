@@ -2,7 +2,7 @@
 
 CS4246/5446, Semester 1 AY2026/27. Brandon owns all the code, plus §4 and the PPO/algorithms half of §6.
 
-**Deadlines:** presentation in the week of 10 Nov (exact slot: **TBC, find out today**), report due **Sun 15 Nov, 23:59**.
+**Deadlines:** presentation **Thu 12 Nov, 2 pm**, report due **Sun 15 Nov, 23:59**.
 
 ---
 
