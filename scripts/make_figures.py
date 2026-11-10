@@ -25,12 +25,16 @@ from carbonhvac.stats import bootstrap_ci
 
 RES = Path("results")
 FIG, TAB = RES / "figures", RES / "tables"
-METRICS = {"kwh": "Energy (kWh/day)", "kg_co2": "Carbon (kg CO2/day)", "cost_sgd": "Cost (SGD/day)",
+METRICS = {"reward": "Reward (per day)", "kwh": "Energy (kWh/day)", "kg_co2": "Carbon (kg CO2/day)", "cost_sgd": "Cost (SGD/day)",
            "comfort_dh": "Discomfort (degC·h/day)", "viol_pct": "Occupied steps in violation (%)",
            "max_dev": "Max deviation (degC)", "ci_per_kwh": "Effective CI (kg/kWh)"}
-ORDER = ["fixed_setpoint", "setback", "carbon_heuristic", "dqn", "ppo", "oracle"]
-LABEL = {"fixed_setpoint": "Fixed setpoint", "setback": "Occupancy setback",
-         "carbon_heuristic": "Carbon heuristic", "dqn": "DQN", "ppo": "PPO", "oracle": "Oracle (DP)"}
+ORDER = ["fixed_setpoint", "setback_24", "setback", "carbon_heuristic", "carbon_prop", "dqn", "ppo", "oracle"]
+LABEL = {"fixed_setpoint": "Fixed setpoint (24 °C)", "setback_24": "Setback, 24 °C (untuned)",
+         "setback": "Setback, tuned", "carbon_heuristic": "Carbon heuristic, tuned",
+         "carbon_prop": "Carbon-proportional, tuned", "dqn": "DQN", "ppo": "PPO", "oracle": "Oracle (DP)",
+         "setback_mc": "Setback, tuned (≤1% viol.)"}
+TUNED = json.loads((RES / "baselines_tuned.json").read_text())
+BEST_RULE = TUNED["best_rule"]
 # reference palette (light): blue, orange, aqua; baselines in neutral ink
 C = {"ppo": "#2a78d6", "dqn": "#eb6834", "heur": "#1baf7a", "ink": "#0b0b0b", "muted": "#8a8984", "grid": "#e6e5e0"}
 
@@ -78,7 +82,7 @@ def main_table(summary):
 
 def headline(baselines, learned):
     """Paired comparison on identical test episodes, replicated over seeds."""
-    heur = baselines[baselines.controller == "carbon_heuristic"].set_index("day")
+    heur = baselines[baselines.controller == BEST_RULE].set_index("day")
     fixed = baselines[baselines.controller == "fixed_setpoint"].set_index("day")
     oracle = baselines[baselines.controller == "oracle"].set_index("day")
     out = {}
@@ -87,16 +91,19 @@ def headline(baselines, learned):
         if not len(sub):
             continue
         res = {}
-        for m in ("kg_co2", "cost_sgd", "kwh", "comfort_dh", "viol_pct"):
+        for m in ("reward", "kg_co2", "cost_sgd", "kwh", "comfort_dh", "viol_pct"):
             diffs = [(g.set_index("day")[m] - heur[m]).mean() for _, g in sub.groupby("seed")]
             mean, lo, hi = bootstrap_ci(diffs)
             p = sps.ttest_1samp(diffs, 0).pvalue if len(diffs) > 1 else float("nan")
-            res[m] = {"diff_vs_heuristic": mean, "ci": [lo, hi], "p": p,
-                      "pct_vs_heuristic": 100 * mean / heur[m].mean() if heur[m].mean() else None}
+            res[m] = {"diff_vs_best_rule": mean, "ci": [lo, hi], "p": p,
+                      "pct_vs_best_rule": 100 * mean / abs(heur[m].mean()) if abs(heur[m].mean()) > 0.05 else None}
         ctrl_c = per_seed(sub)["kg_co2"].mean()
         res["oracle_gap_capture_vs_fixed_pct"] = 100 * (fixed.kg_co2.mean() - ctrl_c) / (fixed.kg_co2.mean() - oracle.kg_co2.mean())
-        res["oracle_gap_capture_vs_heuristic_pct"] = 100 * (heur.kg_co2.mean() - ctrl_c) / (heur.kg_co2.mean() - oracle.kg_co2.mean())
+        res["oracle_gap_capture_vs_best_rule_pct"] = 100 * (heur.kg_co2.mean() - ctrl_c) / (heur.kg_co2.mean() - oracle.kg_co2.mean())
+        ctrl_r = per_seed(sub)["reward"].mean()
+        res["reward_gap_capture_vs_best_rule_pct"] = 100 * (ctrl_r - heur.reward.mean()) / (oracle.reward.mean() - heur.reward.mean())
         out[algo] = res
+    out["best_rule"] = BEST_RULE
     (TAB / "headline.json").write_text(json.dumps(out, indent=2, default=float))
     return out
 
@@ -153,13 +160,16 @@ def fig_pareto(baselines):
     for _, r in means.iterrows():
         ax.annotate(f"λK={r.lam:g}", (r.comfort_dh, r.kg_co2), textcoords="offset points",
                     xytext=(6, 4), fontsize=8, color=C["muted"])
-    for ctrl, mk in (("setback", "s"), ("carbon_heuristic", "s"), ("oracle", "*")):
+    rf = pd.read_csv(RES / "rule_front.csv").sort_values("comfort_dh")
+    rf = rf[rf.kg_co2 <= 11.5]
+    ax.plot(rf.comfort_dh, rf.kg_co2, color=C["heur"], marker="s", markersize=5, linewidth=1.5,
+            label="Setback, setpoint 24.0–26.0 °C")
+    for ctrl, mk in ((BEST_RULE, "s"), ("oracle", "*")):
         b = baselines[baselines.controller == ctrl]
-        ax.scatter(b.comfort_dh.mean(), b.kg_co2.mean(), marker=mk, s=110 if mk == "*" else 60,
-                   color=C["heur"] if ctrl == "carbon_heuristic" else C["ink"], zorder=5,
-                   edgecolor="white", linewidth=1.5)
+        ax.scatter(b.comfort_dh.mean(), b.kg_co2.mean(), marker=mk, s=130 if mk == "*" else 70,
+                   color=C["heur"] if mk == "s" else C["ink"], zorder=5, edgecolor="white", linewidth=1.5)
         ax.annotate(LABEL[ctrl], (b.comfort_dh.mean(), b.kg_co2.mean()), textcoords="offset points",
-                    xytext=(8, -12), fontsize=9)
+                    xytext=(8, -14), fontsize=9)
     ax.set_xscale("symlog", linthresh=0.05)
     ax.set_xlabel("Discomfort (degC·h per day, occupied, symlog)")
     ax.set_ylabel("Carbon (kg CO2 per day)")
@@ -213,7 +223,9 @@ def fig_day_trace(day=None):
         return
     model = PPO.load(path, device="cpu")
     env = CarbonHVACEnv(EnvConfig(split="test"))
-    heur = CarbonHeuristic(**json.loads((RES / "heuristic.json").read_text()))
+    from carbonhvac.baselines import CarbonProportional
+    rules = {"setback": OccupancySetback, "carbon_heuristic": CarbonHeuristic, "carbon_prop": CarbonProportional}
+    heur = rules[BEST_RULE](**TUNED["rules"][BEST_RULE]["best_reward"])
     if day is None:  # a representative workday: median CI swing among test workdays
         cands = [d for d in env.days if (d + 3) % 7 < 5]
         swings = [np.ptp(env.prof.ci[d * 96 + 32:d * 96 + 72]) for d in cands]
@@ -231,7 +243,7 @@ def fig_day_trace(day=None):
     ax = axes[0]
     ax.axhspan(env.cfg.comfort_low, env.cfg.comfort_high, color=C["heur"], alpha=0.08, linewidth=0)
     ax.step(h, ppo.t_in, where="post", color=C["ppo"], label="PPO")
-    ax.step(h, hr.t_in, where="post", color=C["heur"], label="Carbon heuristic")
+    ax.step(h, hr.t_in, where="post", color=C["heur"], label=LABEL[BEST_RULE])
     ax.set_ylabel("Indoor temp (degC)")
     ax.legend(loc="upper right", ncol=2)
     ax.set_title(f"Test day {day}: shaded = occupied, green band = comfort", loc="left")
@@ -260,7 +272,7 @@ def main():
     fig_pareto(baselines)
     fig_ablations()
     fig_day_trace()
-    print(summary[["controller", "n", "kg_co2", "kg_co2_lo", "kg_co2_hi", "comfort_dh", "viol_pct", "ci_per_kwh"]].round(3).to_string(index=False))
+    print(summary[["controller", "n", "reward", "kg_co2", "kg_co2_lo", "kg_co2_hi", "comfort_dh", "viol_pct", "ci_per_kwh"]].round(3).to_string(index=False))
     print(json.dumps(hl, indent=1, default=lambda x: round(float(x), 3)))
 
 

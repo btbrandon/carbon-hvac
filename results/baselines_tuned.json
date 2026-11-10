@@ -1,0 +1,52 @@
+{
+  "n_configs": 972,
+  "n_train_days": 60,
+  "max_viol_pct": 1.0,
+  "best_rule": "setback",
+  "rules": {
+    "setback": {
+      "best_reward": {
+        "setpoint": 25.9,
+        "lead_hours": 1.0
+      },
+      "matched_comfort": {
+        "setpoint": 25.9,
+        "lead_hours": 0.5
+      },
+      "train_reward": -11.840754597306995,
+      "train_reward_mc": -11.846576963927475
+    },
+    "carbon_heuristic": {
+      "best_reward": {
+        "ci_threshold": 0.12223686288390116,
+        "low": 25.5,
+        "high": 25.9,
+        "precool_start": 6.0
+      },
+      "matched_comfort": {
+        "ci_threshold": 0.13738386587990226,
+        "low": 25.5,
+        "high": 25.9,
+        "precool_start": null
+      },
+      "train_reward": -11.916292992166719,
+      "train_reward_mc": -12.071429083762672
+    },
+    "carbon_prop": {
+      "best_reward": {
+        "base": 25.9,
+        "gain": 0.0,
+        "ci_ref": 0.16184609937677014,
+        "lead_hours": 1.0
+      },
+      "matched_comfort": {
+        "base": 25.9,
+        "gain": 0.0,
+        "ci_ref": 0.16184609937677014,
+        "lead_hours": 0.5
+      },
+      "train_reward": -11.840754597306995,
+      "train_reward_mc": -11.846576963927475
+    }
+  }
+}
