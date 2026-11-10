@@ -97,3 +97,14 @@ The slides show the main comparison, the Pareto front and the CI ablation. Robus
 | Real data not obtained in time | Synthetic profiles calibrated to published SG/UK ranges; stated as a limitation |
 | Agent memorises the clock instead of reading CI | The shifted-CI test and no-CI ablation exist exactly to show this |
 | Time | Extension (Lagrangian) is the first thing to cut; Tier 1 analysis is not cut |
+
+## 7. Progress log
+
+**Tue 10 Nov (stages 1–3 done)**
+- Simulator, env, baselines, DP oracle, 10 validation tests passing.
+- 48 runs complete (main 5×PPO + 5×DQN, λK sweep 6×3, 4 ablations ×5): 26 min wall, 2.8 CPU-h.
+- Headline: PPO −11.3% carbon vs carbon heuristic (95% CI −12.0 to −10.7%), 71% of the heuristic→oracle gap; 5.5% occupied-step violations (0.10 °C·h/day), concentrated 17:00–18:30.
+- Key finding: PPO's gain is energy reduction, not time-shifting (effective CI 0.117 vs heuristic 0.116, oracle 0.109; no-CI ablation only +1.3%).
+- Slides (`docs/slides/slides.md`), script (`docs/script.md`), §4 draft, `docs/technical.md` written.
+
+**Next (stage 5, after Thursday):** scenario evals (shifted CI, sensor noise, price/CI regimes), Lagrangian PPO, §6 PPO draft, real data if obtained.
