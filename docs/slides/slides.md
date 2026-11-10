@@ -4,73 +4,146 @@ theme: default
 paginate: true
 size: 16:9
 style: |
-  section { font-family: "Helvetica Neue", Arial, sans-serif; font-size: 26px; color: #0b0b0b; background: #fcfcfb; padding: 56px 64px; }
-  h1 { font-size: 44px; color: #0b0b0b; margin-bottom: 0.3em; }
-  h2 { font-size: 34px; color: #0b0b0b; margin: 0 0 0.4em; }
-  strong { color: #2a78d6; }
-  table { font-size: 21px; border-collapse: collapse; }
-  th { background: #f1f0ec; }
-  td, th { padding: 6px 12px; }
-  .muted { color: #52514e; font-size: 20px; }
-  .big { font-size: 64px; font-weight: 700; color: #2a78d6; line-height: 1; }
-  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; align-items: start; }
-  .wide-left { grid-template-columns: 1.35fr 1fr; gap: 28px; }
-  .wide-left li { font-size: 23px; }
-  img { display: block; margin: 0 auto; }
-  footer { color: #8a8984; font-size: 16px; }
-footer: CS4246 Group 23 · Carbon-Aware Smart Building Energy Controller
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  :root { --ink: #17202a; --muted: #5f6b7a; --rule: #d9dee5; --panel: #f3f6f9; --accent: #2a78d6; --accent-soft: #e6f0fb; }
+  section { font-family: "Inter", "Segoe UI", Arial, sans-serif; font-size: 25px; line-height: 1.45; color: var(--ink); background: #fff; padding: 58px 72px 64px; justify-content: flex-start; }
+  h1 { font-size: 50px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.12; margin: 0 0 18px; color: inherit; }
+  h2 { font-size: 34px; font-weight: 700; letter-spacing: -0.015em; line-height: 1.2; margin: 0 0 26px; color: var(--ink); }
+  strong { font-weight: 600; color: inherit; }
+  em { font-style: italic; }
+  ul, ol { margin: 0; padding-left: 1.1em; }
+  li { margin: 0 0 12px; }
+  li::marker { color: var(--muted); }
+  img { display: block; margin: 0 auto; background: transparent; }
+  .kicker { font-size: 15px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+  .muted { color: var(--muted); font-size: 19px; }
+  .caption { color: var(--muted); font-size: 20px; margin-top: 14px; }
+  .hl { color: var(--accent); font-weight: 600; }
+  /* tables: rules, no fills */
+  section table { display: table; width: 100%; font-size: 21px; border-collapse: collapse; margin: 0; }
+  section table tr, section table tr:nth-child(2n) { background: transparent !important; }
+  section table th, section table td { border: none !important; padding: 8px 18px 8px 0; text-align: left; vertical-align: top; }
+  section table th { font-size: 14px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); border-bottom: 2px solid var(--ink) !important; background: transparent !important; }
+  section table td { border-bottom: 1px solid var(--rule) !important; }
+  section table td:first-child { white-space: nowrap; }
+  td strong { color: var(--accent); }
+  /* layout */
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+  .cols > div { min-width: 0; }
+  .wide-left { grid-template-columns: 1.3fr 1fr; }
+  .wide-right { grid-template-columns: 1fr 1.25fr; }
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .card { background: var(--panel); border-radius: 10px; padding: 18px 20px; font-size: 20px; line-height: 1.4; }
+  .card h3 { font-size: 20px; font-weight: 700; margin: 0 0 6px; color: var(--ink); }
+  .card p { margin: 0; }
+  .callout { border-left: 4px solid var(--accent); background: var(--accent-soft); padding: 14px 20px; border-radius: 0 8px 8px 0; margin-top: 26px; }
+  .callout p { margin: 0; }
+  .eq { font-family: "Cambria Math", "Times New Roman", serif; font-size: 26px; background: var(--panel); border-radius: 8px; padding: 12px 18px; margin-bottom: 20px; }
+  .stat { margin-bottom: 26px; }
+  .stat .n { font-size: 66px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; color: var(--accent); }
+  .stat .n.dark { color: var(--ink); }
+  .stat .l { font-size: 19px; color: var(--muted); margin-top: 6px; line-height: 1.35; }
+  /* title and closing slides */
+  section.title { background: #10202e; color: #f4f6f8; justify-content: center; padding: 72px 88px; }
+  section.title h1 { color: #fff; max-width: 900px; }
+  section.title .kicker { color: #7fb3ec; }
+  section.title .sub { font-size: 28px; color: #c9d3dd; margin-bottom: 56px; }
+  section.title .people { font-size: 22px; color: #fff; }
+  section.title .muted { color: #8fa1b3; }
+  section.title::after { display: none; }
+  footer { font-size: 13px; color: #9aa4b0; left: 72px; bottom: 26px; }
+  section::after { font-size: 13px; color: #9aa4b0; right: 72px; bottom: 26px; }
+footer: Group 23 · Carbon-aware HVAC control
 ---
 
+<!-- _class: title -->
 <!-- _paginate: false -->
 <!-- _footer: "" -->
 
+<div class="kicker">CS4246/5446 · Group 23</div>
+
 # Carbon-Aware Smart Building Energy Controller
 
-Learning *when* to cool an office so the grid burns less carbon
+<div class="sub">Learning <em>when</em> to cool an office so the grid burns less carbon</div>
 
-<br>
-
-**Group 23** · Ethan · Jaylon · Brandon · Sean · Patrick
-<span class="muted">CS4246/5446 Reinforcement Learning and Sequential Decision Making · 12 Nov 2026</span>
+<div class="people">Ethan · Jaylon · Brandon · Sean · Patrick</div>
+<div class="muted">Reinforcement Learning and Sequential Decision Making · 12 Nov 2026</div>
 
 ---
 
-## Why: when a building consumes matters as much as how much
+<div class="kicker">Motivation</div>
 
-- Buildings use **~30% of global final energy**; in Singapore, air-conditioning dominates commercial electricity
-- Grid **carbon intensity changes hour to hour** with wind and solar output
-- Buildings store "coolth" in their thermal mass → they *can* shift load in time
-- But thermal inertia means an action now affects comfort **hours later** → a sequential decision problem
+## When a building uses power matters as much as how much
 
-**Question:** can an RL controller cut HVAC carbon beyond a well-tuned carbon-aware rule, without hurting comfort?
+- Buildings use about 30% of global final energy; in Singapore, air-conditioning dominates commercial electricity
+- Grid carbon intensity swings hour to hour with wind and solar output
+- A building's thermal mass stores cooling, so load can be moved in time
+- But an action now affects comfort hours later, which makes this a sequential decision problem
+
+<div class="callout">
+
+Can an RL controller cut HVAC carbon beyond a well-tuned rule, without hurting comfort?
+
+</div>
 
 <!-- Patrick -->
 
 ---
+
+<div class="kicker">Approach</div>
 
 ## What we built
 
-1. **Simulator** of an office zone (1R1C thermal model) with a year of weather, occupancy, price and carbon data
-2. **Formal MDP** with a multi-objective reward (carbon, cost, comfort)
-3. **PPO and DQN** vs three rule-based controllers and an **exact DP upper bound**
-4. **Analysis**: 5 seeds, held-out months, 95% CIs, Pareto sweep, state ablations, policy traces
-5. **Responsible-AI** reading of what the agent actually learned
+<div class="cards">
+<div class="card">
+
+### Simulator
+A 1R1C office zone driven by a year of weather, occupancy, price and carbon data
+
+</div>
+<div class="card">
+
+### Formulation
+An MDP whose reward combines carbon, cost and comfort
+
+</div>
+<div class="card">
+
+### Controllers
+PPO and DQN against tuned rule-based controllers and an exact DP upper bound
+
+</div>
+<div class="card">
+
+### Evaluation
+5 seeds, held-out months, 95% CIs, a Pareto sweep, state ablations and policy traces
+
+</div>
+<div class="card">
+
+### Responsible AI
+What the agent actually learned, and who pays for it
+
+</div>
+</div>
 
 <!-- Patrick -->
 
 ---
 
-## Simulator: a 1R1C office zone
+<div class="kicker">Simulator</div>
+
+## A single office zone with a 6-hour time constant
 
 <div class="cols">
 <div>
 
-C·dT/dt = (T_out − T_in)/R + Q_int + Q_sol − COP·P
+<div class="eq">C·dT/dt = (T<sub>out</sub> − T<sub>in</sub>)/R + Q<sub>int</sub> + Q<sub>sol</sub> − COP·P</div>
 
-- R = 0.4 K/kW, C = 15 kWh/K → **τ = 6 h**
-- 14 kW HVAC, COP falls on hot afternoons
-- Exact discretisation, 15-min steps
-- **Validated:** step response hits 63% at τ; energy ≈ office ACMV range; DP oracle dominates every baseline (10 unit tests)
+- R = 0.4 K/kW and C = 15 kWh/K, so τ = 6 h
+- 14 kW HVAC whose COP falls on hot afternoons
+- Exact discretisation at 15-minute steps
+- Validated by 10 unit tests: step response, energy range, oracle dominance
 
 </div>
 <div>
@@ -78,11 +151,11 @@ C·dT/dt = (T_out − T_in)/R + Q_int + Q_sol − COP·P
 | Series | Source |
 |---|---|
 | Weather | Singapore-like, 25–33 °C, rainy days |
-| Occupancy | Weekday 08–18 + jitter, holidays |
+| Occupancy | Weekdays 08–18, jitter, holidays |
 | Price | USEP-like, SGD/kWh |
-| Carbon intensity | **UK-grid-like** (SG grid ~95% gas → nearly flat CI) |
+| Carbon intensity | UK-grid-like (Singapore's ~95% gas grid is nearly flat) |
 
-Train Jan–Sep · **test Oct–Dec (92 unseen days)**
+<div class="caption">Train January–September · test October–December (92 unseen days)</div>
 
 </div>
 </div>
@@ -91,67 +164,86 @@ Train Jan–Sep · **test Oct–Dec (92 unseen days)**
 
 ---
 
-## The MDP
+<div class="kicker">Formulation</div>
 
-- **State (20 features):** T_in, T_out, occupancy sensor, price, CI, time of day, weekday, forecasts of T_out / price / CI at +1, 2, 4, 8 h
-- **Action:** HVAC power ∈ {0, 25, 50, 75, 100}% — the same space for PPO, DQN *and* exact DP
-- **Reward:** r_t = −[ λ_C·CI_t·E_t + λ_$·p_t·E_t + λ_K·discomfort_t ], discomfort = °C·h outside **23–26 °C, only when occupied**
-- **γ = 0.99** at 15 min ≈ 25 h effective horizon, long enough to credit 5 am pre-cooling for 2 pm comfort
+## The decision problem
 
-**Key observation:** carbon and cost are both ∝ energy, so carbon-awareness = **shifting when you consume**. Price and CI are nearly uncorrelated here (r = −0.07): the cheapest hour is not the cleanest.
+<div class="cols wide-left">
+<div>
+
+| Element | Definition |
+|---|---|
+| State | 20 features: T<sub>in</sub>, T<sub>out</sub>, occupancy sensor, price, CI, time, weekday, forecasts at +1, 2, 4, 8 h |
+| Action | HVAC power ∈ {0, 25, 50, 75, 100}%, shared by PPO, DQN and the DP oracle |
+| Reward | −[λ<sub>C</sub>·CI·E + λ<sub>$</sub>·price·E + λ<sub>K</sub>·discomfort], discomfort counted only when occupied, outside 23–26 °C |
+| Discount | γ = 0.99, a ~25 h horizon: enough to credit 5 am pre-cooling for 2 pm comfort |
+
+</div>
+<div>
+
+<div class="callout">
+
+Carbon and cost both scale with energy, so being carbon-aware means **shifting when you consume**.
+
+Price and CI are nearly uncorrelated here (r = −0.07): the cheapest hour is not the cleanest.
+
+</div>
+</div>
+</div>
 
 <!-- Brandon -->
 
 ---
 
-## Controllers, and a fair fight
+<div class="kicker">Controllers</div>
 
-| Controller | What it does |
-|---|---|
-| Fixed setpoint | Holds 24 °C around the clock |
-| Setback | Cools during working hours only; **setpoint and start time tuned** |
-| Carbon heuristic | Cools deeper when CI is low, drifts warmer when high; **4 parameters tuned** |
-| Carbon-proportional | Setpoint rises smoothly with CI; **gain and base tuned** |
-| DQN / **PPO** | PPO: clipped surrogate, GAE, return normalisation; **12 settings × 2 seeds tuned** |
-| **Oracle (DP)** | Backward induction with perfect foresight, a true upper bound |
+## Every controller gets the same tuning budget rules
 
-**Same rules for everyone:** tuned on training days only (972 rule settings), scored with the same reward PPO maximises, then tested **once** on 92 unseen days. 5 seeds per learner, paired 95% bootstrap CIs.
+| Controller | Behaviour | Tuned |
+|---|---|---|
+| Fixed setpoint | Holds 24 °C around the clock | — |
+| Setback | Cools during working hours only | setpoint, start time |
+| Carbon heuristic | Cools deeper when CI is low, drifts warmer when high | 4 parameters |
+| Carbon-proportional | Setpoint rises with CI | gain, base |
+| PPO · DQN | Clipped surrogate, GAE, return normalisation | PPO: 12 settings × 2 seeds |
+| Oracle (DP) | Backward induction with perfect foresight | upper bound |
+
+<div class="callout">
+
+All tuning on training days only (972 rule settings), scored with the reward PPO maximises. Tested once on 92 unseen days; 5 seeds per learner, paired 95% bootstrap CIs.
+
+</div>
 
 <!-- Jaylon: baselines + tuning. Brandon: PPO/oracle rows -->
 
 ---
 
-## Result: tuning matters most; PPO adds a little more
+<div class="kicker">Main result</div>
 
-<div class="cols">
+## Tuning matters most; PPO adds a little more
+
+<div class="cols wide-left">
 <div>
 
-| Controller | kg CO₂/day | Viol.* |
+| Controller | kg CO₂/day | Violations* |
 |---|---|---|
 | Fixed setpoint | 18.96 | 0% |
 | Setback, 24 °C (untuned) | 11.10 | 0% |
-| **Best tuned rule** (25.9 °C) | 8.52 | 0.7% |
+| Best tuned rule (25.9 °C) | 8.52 | 0.7% |
 | DQN | 8.52 | 7.6% |
-| **PPO (tuned)** | **8.21** | 5.2% |
+| **PPO (tuned)** | **8.21** | **5.2%** |
 | Oracle (DP) | 7.83 | 3.7% |
 
-<span class="muted">*occupied 15-min steps outside 23–26 °C</span>
+<div class="muted">*occupied 15-minute steps outside 23–26 °C</div>
 
 </div>
 <div>
 
-Tuning one setpoint: **−23%** carbon
+<div class="stat"><div class="n dark">−23%</div><div class="l">carbon from tuning one setpoint</div></div>
 
-PPO vs the best tuned rule:
+<div class="stat"><div class="n">−3.7%</div><div class="l">PPO vs best tuned rule, 95% CI [−4.0, −3.2]<br>reward +1.1% (p = 0.03), cost −4.1%<br>19% of the reward gap to the oracle closed</div></div>
 
-<div class="big">−3.7%</div>
-
-carbon, 95% CI [−4.0, −3.2]%
-**reward +1.1%** (p = 0.03), cost −4.1%
-
-19% of the gap to the oracle closed
-
-Price: more frequent but tiny violations (0.08 °C·h/day)
+<div class="muted">The price: more frequent but tiny comfort violations (0.08 °C·h/day)</div>
 
 </div>
 </div>
@@ -160,25 +252,31 @@ Price: more frequent but tiny violations (0.08 °C·h/day)
 
 ---
 
-## Learning: PPO is stable, DQN is noisy
+<div class="kicker">Learning dynamics</div>
 
-![h:440](../../results/figures/learning_curves.png)
+## PPO learns stably; DQN is noisy
 
-PPO plateaus by ~700k steps; its 5 seeds land within 1.3% on test carbon. It ends **level with the tuned rule** on these 16 days and slightly ahead on 60 validation and 92 test days: a small edge.
+![h:400](../../results/figures/learning_curves.png)
+
+<div class="caption">PPO plateaus by ~700k steps and its 5 seeds land within 1.3% on test carbon. On these 16 training days it ends level with the tuned rule; it is slightly ahead on validation and test.</div>
 
 <!-- Sean (Brandon for PPO stability questions) -->
 
 ---
 
-## What did PPO learn? Ride the band edge, cool a little in carbon dips
+<div class="kicker">Policy behaviour</div>
 
-![h:560](../../results/figures/day_trace.png)
+## PPO rides the band edge and cools a little in carbon dips
+
+![h:500](../../results/figures/day_trace.png)
 
 <!-- Sean: Both hold ~25.7-25.9 °C. PPO cools slightly more in the 10:00 and 12:00-15:00 CI dips, then coasts to 26 °C as CI rises. Effective CI paid: PPO 0.115 vs rule 0.118 kg/kWh. -->
 
 ---
 
-## Where is the remaining headroom? Not in the carbon signal
+<div class="kicker">Where the headroom is</div>
+
+## The bottleneck is occupancy, not the carbon signal
 
 <div class="cols wide-left">
 <div>
@@ -188,17 +286,17 @@ PPO plateaus by ~700k steps; its 5 seeds land within 1.3% on test carbon. It end
 | Full foresight | −13.07 | 7.83 |
 | No carbon foresight | −13.15 | 8.01 |
 | **No occupancy foresight** | **−14.08** | 7.92 |
-| *Best tuned rule* | *−13.88* | *8.52* |
-| *PPO (tuned)* | *−13.72* | *8.21* |
+| Best tuned rule | −13.88 | 8.52 |
+| PPO (tuned) | −13.72 | 8.21 |
 
 </div>
 <div>
 
-- Knowing future CI is worth **0.08** reward/day
-- Knowing when people arrive and leave is worth **~1.0**
-- Tuning drove every carbon-reactive rule to **ignore CI**
-- Removing CI from PPO's state costs only +1.3% carbon
-- One room with τ = 6 h is a **leaky battery**: little to shift
+<div class="stat"><div class="n dark">0.08</div><div class="l">reward/day from knowing future carbon intensity</div></div>
+
+<div class="stat"><div class="n">~1.0</div><div class="l">reward/day from knowing when people arrive and leave</div></div>
+
+<div class="muted">Tuning switched off the rules' carbon-reactive features, and removing CI from PPO's state costs only 1.3% carbon. One room with τ = 6 h is a leaky battery.</div>
 
 </div>
 </div>
@@ -207,52 +305,102 @@ PPO plateaus by ~700k steps; its 5 seeds land within 1.3% on test carbon. It end
 
 ---
 
-## At matched comfort, it's close to a tie
+<div class="kicker">Trade-off</div>
 
-![h:430](../../results/figures/pareto.png)
+## At matched comfort, it is close to a tie
 
-Inside the comfort band, the PPO front and the setpoint sweep overlap. PPO's extra savings come from **accepting more discomfort**.
+![h:400](../../results/figures/pareto.png)
+
+<div class="caption">Inside the comfort band the PPO front and the setpoint sweep overlap. PPO's extra savings come from accepting more discomfort.</div>
 
 <!-- Sean presents; Patrick links to RAI -->
 
 ---
 
-## Responsible AI
+<div class="kicker">Responsible AI</div>
 
-- **Who sets λ?** The weights decide whose comfort is traded for carbon. The Pareto front makes that trade visible.
-- **Specification gaming:** PPO sits at the edge of the band. Comfort is charged only when occupied, so a faulty sensor invites exploitation; we **score comfort on true occupancy**.
-- **Comfort is a distribution:** **53%** of PPO's violations fall at 17:00–18:30. **Late leavers** bear them; the mean hides it.
-- **Honest baselines:** an untuned baseline overstated PPO's gain from 3.7% to 11%. Comparing against weak rules is a quiet way to mislead.
-- **Transparency:** a tuned thermostat gets most of the benefit and is fully explainable. That is a legitimate deployment choice.
+## What the numbers do not show on their own
+
+<div class="cards">
+<div class="card">
+
+### Who sets λ?
+The weights decide whose comfort is traded for carbon. The Pareto front makes that trade visible.
+
+</div>
+<div class="card">
+
+### Specification gaming
+Comfort is charged only when occupied, so a faulty sensor invites exploitation. We score comfort on true occupancy.
+
+</div>
+<div class="card">
+
+### Comfort is a distribution
+53% of PPO's violations fall between 17:00 and 18:30. Late leavers bear them; the mean hides it.
+
+</div>
+<div class="card">
+
+### Honest baselines
+An untuned baseline inflated PPO's gain from 3.7% to 11%. Weak baselines quietly mislead.
+
+</div>
+<div class="card">
+
+### Transparency
+A tuned thermostat gets most of the benefit and anyone can explain it. That is a legitimate choice.
+
+</div>
+</div>
 
 <!-- Patrick -->
 
 ---
 
-## Limitations and what is next
+<div class="kicker">Limitations</div>
 
-- Single zone, simplified thermal model, **synthetic profiles** (UK CI substituted for Singapore)
-- Small RL margin; DQN, sweep and ablations used default PPO settings
+## What this study cannot claim yet
 
-**In progress for the report**
-- **Occupancy prediction**: where the oracle's headroom actually is
-- Robustness: shifted CI (reads signal vs memorises clock), noisy occupancy, tariff regimes
-- **Constrained PPO** (Lagrangian): comfort as a constraint, not a weight
-- **Battery storage**: a real lever for carbon shifting
+<div class="cols">
+<div>
+
+### Limits
+
+- One zone and a simplified thermal model
+- Synthetic profiles, with UK carbon intensity standing in for Singapore's
+- A small RL margin; DQN, the λ sweep and the ablations used default PPO settings
+
+</div>
+<div>
+
+### Next, for the report
+
+- Occupancy prediction, where the oracle's headroom is
+- Robustness: shifted CI, noisy occupancy, tariff regimes
+- Constrained PPO: comfort as a constraint, not a weight
+- Battery storage: a real lever for shifting carbon
+
+</div>
+</div>
 
 <!-- Patrick -->
 
 ---
+
+<div class="kicker">Summary</div>
 
 ## Takeaways
 
-1. **Tune the baseline first:** one setpoint gives −23% carbon; skipping this inflated our RL gain about 3×
-2. Tuned PPO still wins, **−3.7% carbon and +1.1% reward**, with a little genuine load-shifting
-3. The carbon signal is worth little in one room; **occupancy foresight** is the real headroom
-4. An oracle plus fair tuning is what reveals all of this
+1. **Tune the baseline first.** One setpoint gives −23% carbon; skipping this inflated our RL gain about threefold.
+2. **Tuned PPO still wins**, by 3.7% carbon and 1.1% reward, with a little genuine load shifting.
+3. **In one room the carbon signal is worth little.** Occupancy foresight is the real headroom.
+4. **An oracle plus fair tuning** is what reveals all of this.
 
-<br>
+<div class="callout">
 
-**Thank you · Questions?**
+Thank you. Questions?
+
+</div>
 
 <!-- Patrick -->

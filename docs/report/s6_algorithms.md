@@ -1,6 +1,25 @@
-# 6. Methods: learning algorithms, upper bound and tuning
+# 6. Methods: baselines, learning algorithms, upper bound and tuning
 
-*Author: Brandon. Covers §6.2–6.4; Jaylon's rule-based baselines are §6.1. Target ≈ 1.25 pages in the body. Table 6.A goes in the appendix. Citations in Vancouver style; renumber when merging.*
+*Authors: Jaylon (§6.1), Brandon (§6.2–6.4). Target ≈ 1.75 pages in the body. Tables 6.A and 6.B go in the appendix. Citations in Vancouver style; renumber when merging.*
+
+## 6.1 Rule-based baselines
+
+All rules share one primitive: an ideal staged thermostat that, at each step, selects the power level whose predicted next indoor temperature is closest to a target. The rules differ only in the target and when it applies.
+
+1. **Fixed setpoint.** Holds 24 °C continuously; the reference against which all savings are measured.
+2. **Occupancy setback.** Cools to a setpoint from a lead time before the scheduled 08:00 start until 18:00 on workdays, or whenever the occupancy sensor reads occupied; otherwise off. We report it both untuned (24 °C) and tuned, which isolates the value of tuning.
+3. **Carbon heuristic.** Setback with a carbon-intensity threshold θ: below θ it cools to a lower setpoint, storing cooling in the thermal mass; above θ it lets the zone drift to a higher setpoint. Optional early-morning pre-cooling applies when CI is low.
+4. **Carbon-proportional.** Setback whose setpoint rises linearly with CI: T_set = clip(base + gain·(CI − CI_median), 23, 26) °C, with CI_median the training-period median.
+
+**What tuning found.** Rules 2–4 were tuned under the common protocol of §6.4 (972 configurations; Table 6.B). For each rule we also record a matched-comfort variant (lowest carbon with ≤1% of occupied steps in violation), used for the comfort-matched comparison in §8.3. **All three converged to essentially the same controller: setback at 25.9 °C with a 1-hour lead.** Tuning disabled the carbon-reactive features: the carbon-proportional gain fell to 0, making it identical to setback, and the heuristic's setpoints narrowed to 25.5/25.9 °C, leaving it marginally worse than setback. With a 6-hour thermal time constant (§5), cooling stored in a low-carbon hour largely leaks away before it is needed, so the best rule is to cool only when occupied, at the top of the comfort band. That setpoint sits just below a cliff: on training days, 25.9 °C leaves 0.7% of occupied steps in violation but 26.0 °C leaves 32%, because the staged thermostat oscillates around its target and crosses the band edge.
+
+**Table 6.B (appendix)** Rule tuning on the 60 selection days (mean daily reward; higher is better).
+
+| Rule | Configurations | Selected (best reward) | Matched-comfort variant | Reward |
+|---|---|---|---|---|
+| Setback | 84 | 25.9 °C, 1 h lead | 25.9 °C, 0.5 h lead | −11.84 |
+| Carbon heuristic | 756 | θ = 0.122 kg/kWh, 25.5/25.9 °C, pre-cool from 06:00 | θ = 0.137 kg/kWh, 25.5/25.9 °C, no pre-cool | −11.92 |
+| Carbon-proportional | 132 | base 25.9 °C, gain 0, 1 h lead | base 25.9 °C, gain 0, 0.5 h lead | −11.84 |
 
 ## 6.2 Proximal Policy Optimization (main method)
 
