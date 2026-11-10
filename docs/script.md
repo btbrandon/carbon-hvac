@@ -34,58 +34,60 @@ The reward is a weighted cost: carbon, plus half the electricity cost, plus a co
 
 The key observation: carbon and cost are both proportional to energy. So the only way to be *carbon*-aware rather than just *efficient* is to shift *when* you consume. And in our data price and carbon are nearly uncorrelated, r = −0.07, so the cheapest hour is not the cleanest."
 
-## 6. Controllers · Jaylon (+ Brandon for the last three rows) · 5:30–6:45
+## 6. Controllers · Jaylon (+ Brandon) · 5:30–6:45
 
-**Jaylon:** "Our baselines go from weak to strong. A fixed 24 °C thermostat. An occupancy setback that only cools during working hours. And a carbon heuristic: it cools deeper when carbon is low and lets the room drift warmer when carbon is high, with the threshold tuned on the training months. Beating that last one is what counts."
+**Jaylon:** "Our rule-based controllers: a fixed thermostat; a setback that only cools during working hours; a carbon heuristic that cools deeper when the grid is clean and lets the room drift warmer when it's dirty; and a carbon-proportional rule whose setpoint rises smoothly with carbon intensity.
 
-**Brandon:** "For learners we use PPO, with the clipped objective, GAE, an entropy bonus and return normalisation, and DQN for comparison. Then the oracle: since the dynamics are deterministic given the weather, we solve the day exactly by backward induction over a fine temperature grid with perfect foresight. That's the best any controller could do, so we can say how much of the achievable saving we capture."
+The important part is that every rule was **tuned**: 972 settings in total, scored on training days with exactly the same reward PPO maximises. Our first results used untuned rules, and PPO looked 11% better. Once the rules were tuned fairly, most of that gap disappeared. We'll come back to that."
 
-**Jaylon:** "Everything is evaluated with 5 seeds on the same 92 test days, with paired bootstrap confidence intervals."
+**Brandon:** "PPO got the same treatment: we searched 12 hyperparameter settings with 2 seeds each on training days, then trained the winner, a larger rollout batch, with 5 fresh seeds. And the oracle: since the dynamics are deterministic given the weather, we solve each day exactly by backward induction with perfect foresight. That's the best any controller could possibly do."
+
+**Jaylon:** "Everything is tested once on 92 unseen days, with paired bootstrap confidence intervals."
 
 ## 7. Main result · Sean · 6:45–8:15
 
-"Here's the main table. The fixed thermostat emits about 19 kg of CO₂ a day. Setback roughly halves that, and the carbon heuristic brings it to 9.3. PPO gets to 8.26: an **11.3% reduction versus the heuristic**, with a 95% interval of about 10.7 to 12%, significant across all five seeds. The oracle is at 7.83, so PPO captures 71% of the remaining gap. Cost falls by about 12% too.
+"Here's the main table. The fixed thermostat emits about 19 kg of CO₂ a day. Simple setback at 24 °C brings it to 11. Then just **tuning that setpoint**, to 25.9 °C, cuts another 23%, to 8.5 kg. That's the biggest single gain in the whole project, and it needs no RL.
 
-The price is comfort. PPO is slightly outside the band on 5.5% of occupied 15-minute steps, but the magnitude is tiny: about a tenth of a degree-hour per day, mostly in the late afternoon."
+Tuned PPO gets to 8.21: **3.7% less carbon than the best tuned rule**, with a tight confidence interval, and 1.1% better on the reward it optimises, significant at p = 0.03. Cost falls about 4%. The oracle is at 7.83, so PPO closes about a fifth of the remaining gap. The price is comfort: violations are more frequent, but tiny, under a tenth of a degree-hour per day."
 
 ## 8. Learning curves · Sean · 8:15–9:00
 
-"PPO passes the heuristic after about 300,000 steps, and the five seeds end within 1.2% of each other. DQN reaches a similar level but collapses intermittently, which is why we prefer PPO here."
+"PPO learns smoothly and its five seeds agree within 1.3%. DQN learns about as fast but collapses intermittently. Notice that on these 16 training days PPO ends level with the tuned rule. It's ahead on the larger validation and test sets, but the edge is small, and we want to be upfront about that."
 
 ## 9. Policy trace · Sean · 9:00–10:15
 
-"What did PPO actually learn? On this test day, the blue line holds the room at about 25.7 °C, just under the top of the band, all day. It doesn't pre-cool. The green heuristic dives to 23.5 °C whenever carbon dips. But with a six-hour time constant, a colder room just leaks heat in faster, so that stored cooling is mostly wasted. PPO discovered that the cheapest strategy in this building is not to store cold."
+"What did PPO learn? Both controllers hold the room high in the band, around 25.7 to 25.9 °C, the same insight the tuning found. The difference is in the details: PPO cools a little harder during the clean-grid dips around 10 am and midday, then coasts up to 26 °C as carbon rises towards the evening. So there is some genuine load-shifting: the carbon PPO pays per kWh is 0.115 versus 0.118 for the rule."
 
-## 10. Is it carbon-aware? · Sean (+ Brandon) · 10:15–11:30
+## 10. Where is the headroom? · Sean (+ Brandon) · 10:15–11:30
 
-"So is PPO really carbon-aware? We tested it directly.
+"We asked where the oracle's advantage actually comes from by taking away one piece of its foresight at a time.
 
-- If we remove carbon intensity from the agent's inputs, carbon goes up by only 1.3%.
-- The average carbon intensity it pays per kWh is the same as the heuristic's, while the oracle pays noticeably less.
-- Removing the clock hurts much more.
+- Take away knowledge of future carbon: it barely changes, worth 0.08 per day.
+- Take away knowledge of when people arrive and leave: it drops by about 1.0, below even the tuned thermostat.
 
-So PPO's gain is mostly from using less energy, not from timing. Real shifting is possible, as the oracle shows, but the headroom is small because this room is a leaky battery. That's exactly why the battery extension is next."
+So in this building **the carbon signal isn't the bottleneck; predicting occupancy is**. That's consistent with everything else: tuning switched off every carbon-reactive feature of the rules, and removing carbon from PPO's inputs costs only about 1%. A single room with a six-hour time constant is a leaky battery."
 
 ## 11. Pareto · Sean → Patrick · 11:30–12:30
 
-"Changing the comfort weight traces this trade-off curve. Low weight: 4.6 kg a day but 8 degree-hours of discomfort. Very high weight: almost perfect comfort, but then the heuristic is actually *not* beaten. So whether PPO 'wins' depends on how much discomfort you accept, and that's a value judgement, which leads into responsible AI."
+"Sweeping the comfort weight traces PPO's trade-off curve; the green line sweeps the thermostat setpoint. Inside the comfort band the two curves overlap, so at matched comfort it's essentially a tie. PPO's extra savings come from accepting a bit more discomfort. How much discomfort is acceptable is a value judgement, which brings us to responsible AI."
 
 ## 12. Responsible AI · Patrick · 12:30–13:45
 
-"Four points.
+"Five points.
 
 1. **The weights are a value choice.** Who sets them: facility managers or occupants? The Pareto front makes the choice visible.
-2. **Specification gaming.** The agent sits right at the edge of what the reward allows. Comfort is only charged when the room is occupied, so a faulty sensor could be exploited. That's why we always *score* comfort on true occupancy.
-3. **Distribution.** Over 40% of violating steps fall between 5 and 6:30 pm: PPO eases off as the day ends, so the people who stay late bear the discomfort. An average hides that.
-4. **Transparency.** The learned policy is simple enough to explain to a facility manager, which supports human override and a rule-based fallback."
+2. **Specification gaming.** PPO sits right at the edge of what the reward allows. Comfort only counts when the room is occupied, so a faulty sensor could be exploited. That's why we always *score* comfort on true occupancy.
+3. **Distribution.** More than half of PPO's violations happen between 5 and 6:30 pm, so the people who stay late bear the discomfort. An average hides that.
+4. **Honest baselines.** Our own first result overstated the gain about threefold because the baseline wasn't tuned. Weak baselines are a quiet way to mislead, so we report the fair comparison.
+5. **Transparency.** A tuned thermostat gets most of the benefit and anyone can explain it. Choosing it over RL can be the responsible deployment choice."
 
 ## 13. Limitations / next · Patrick · 13:45–14:30
 
-"Limits: a single zone, a simplified model and synthetic data profiles. For the report we're adding robustness tests: shifting the carbon signal in time, to check whether the agent reads it or memorises the clock, plus noisy occupancy and different tariff regimes. We're also adding constrained PPO, which treats comfort as a hard constraint instead of a weight, and possibly a battery to give the agent a real lever for shifting."
+"Limits: a single zone, a simplified model, synthetic data profiles, and a small RL margin. The DQN, sweep and ablation runs also used default PPO settings. For the report: occupancy prediction, since that's where the headroom is; robustness tests, including shifting the carbon signal to check the agent reads it rather than memorising the clock; constrained PPO, which treats comfort as a constraint instead of a weight; and a battery, to give the agent a real lever for shifting."
 
 ## 14. Takeaways · Patrick · 14:30–15:00
 
-"PPO beats a tuned carbon-aware rule by 11% and gets 71% of the way to optimal. But it wins by being frugal at the edge of comfort, not by chasing clean hours. We only know that because we compared against an oracle and ran ablations. Thank you. Happy to take questions."
+"Four takeaways. Tune your baseline first: one setpoint gives 23%, and skipping it inflated our RL result about three times. Tuned PPO still wins, by 3.7% carbon, with a little real load-shifting. In one room the carbon signal is worth little; occupancy foresight is the real headroom. And it took an oracle plus fair tuning to see all of this. Thank you, happy to take questions."
 
 ---
 
@@ -93,11 +95,14 @@ So PPO's gain is mostly from using less energy, not from timing. Real shifting i
 
 | Question | Answer |
 |---|---|
+| Is a 3.7% gain worth RL? (Sean / Patrick) | Honestly, maybe not in one room: a tuned thermostat gets most of it. The value of the study is showing where the headroom is (occupancy) and when RL would pay (storage, multi-zone). |
+| How did you make the comparison fair? (Jaylon / Brandon) | Same training days, same reward, tuned budgets for both (972 rule settings; 12 PPO settings × 2 seeds), a single final test on held-out days, paired CIs over 5 seeds. |
 | Why not continuous actions / SAC? (Brandon) | Discrete actions let one problem admit PPO, DQN and an exact DP optimum. Five levels at 15-min steps already give 17 effective power levels per hour. |
-| Why PPO over DQN? (Brandon) | Same final level, but PPO is far more stable across seeds (±1.2%) while DQN has collapses. PPO is also cheap here because the simulator is fast (36k steps/s). |
-| How is the oracle optimal? (Brandon) | Given the realised weather and occupancy, dynamics are deterministic. Backward induction on a 0.05 °C grid with linear interpolation of V; the only approximation is grid interpolation. Unit-tested to dominate every baseline. |
-| Why γ = 0.99? (Brandon) | 1/(1−γ) = 100 steps ≈ 25 h, enough to credit pre-cooling hours ahead. 0.95 would be about 5 h. |
-| Isn't 5.5% violation bad? (Sean) | Small magnitude (0.1 °C·h/day), concentrated 17:00–18:30 and in the afternoon heat peak. The Pareto sweep shows tighter settings, and constrained PPO is the principled fix. |
+| Why PPO over DQN? (Brandon) | PPO is stable across seeds (±1.3%); DQN collapses intermittently and ends 7% worse on reward. DQN wasn't hyperparameter-tuned, which we state as a limitation. |
+| How is the oracle optimal? (Brandon) | Given the realised weather and occupancy, the dynamics are deterministic. Backward induction on a 0.05 °C grid with linear interpolation of V; the only approximation is the grid. Unit-tested to dominate every baseline. |
+| What did tuning change in PPO? (Brandon) | The rollout length doubled (n_steps 384 → 768 per env), giving larger, less noisy batches. γ = 0.995, smaller learning rates and bigger networks did not help. |
+| Why γ = 0.99? (Brandon) | 1/(1−γ) = 100 steps ≈ 25 h, enough to credit pre-cooling hours ahead. 0.995 was tested in tuning and was worse. |
+| Isn't 5% violation bad? (Sean) | It's frequent but tiny (0.08 °C·h/day) and concentrated 17:00–18:30. At matched comfort PPO roughly ties the thermostat; constrained PPO is the principled fix. |
 | Why not real Singapore data? (Ethan) | SG CI is nearly flat (gas grid), so there's nothing to shift. Loaders for real CSVs exist; synthetic profiles are calibrated to published ranges. |
-| Is the agent just following a schedule? (Sean) | Partly, yes: the no-CI ablation shows it. The shifted-CI test in the report checks this directly. |
+| Is the agent just following the clock? (Sean) | Mostly it follows the schedule, as the no-CI ablation shows, but it pays 0.115 vs 0.118 kg/kWh, so it reacts to CI a little. The shifted-CI test in the report checks this directly. |
 | Average vs marginal emissions? (Patrick) | We use average intensity. Marginal factors could change which hours are "clean"; flagged as a limitation. |

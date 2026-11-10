@@ -104,52 +104,54 @@ Train Jan–Sep · **test Oct–Dec (92 unseen days)**
 
 ---
 
-## Controllers, weakest to strongest
+## Controllers, and a fair fight
 
 | Controller | What it does |
 |---|---|
 | Fixed setpoint | Holds 24 °C around the clock |
-| Occupancy setback | 24 °C from 07:00 on workdays, off otherwise |
-| **Carbon heuristic** | Setback + cool to 23.5 °C when CI is low, drift to 25.5 °C when high; threshold tuned on training months |
-| DQN | Off-policy, ε-greedy, replay buffer |
-| **PPO** | Clipped surrogate, GAE λ = 0.95, entropy 0.01, return normalisation, 8 parallel envs, 800k steps |
+| Setback | Cools during working hours only; **setpoint and start time tuned** |
+| Carbon heuristic | Cools deeper when CI is low, drifts warmer when high; **4 parameters tuned** |
+| Carbon-proportional | Setpoint rises smoothly with CI; **gain and base tuned** |
+| DQN / **PPO** | PPO: clipped surrogate, GAE, return normalisation; **12 settings × 2 seeds tuned** |
 | **Oracle (DP)** | Backward induction with perfect foresight, a true upper bound |
 
-<span class="muted">Protocol: 5 seeds per learner · 92 fixed test days · deterministic policies at test · paired 95% bootstrap CIs</span>
+**Same rules for everyone:** tuned on training days only (972 rule settings), scored with the same reward PPO maximises, then tested **once** on 92 unseen days. 5 seeds per learner, paired 95% bootstrap CIs.
 
-<!-- Jaylon: baselines + metrics. Brandon: PPO/DQN/oracle row -->
+<!-- Jaylon: baselines + tuning. Brandon: PPO/oracle rows -->
 
 ---
 
-## Result: PPO cuts carbon 11% vs the best rule
+## Result: tuning matters most; PPO adds a little more
 
 <div class="cols">
 <div>
 
-| Controller | kg CO₂/day | Violations* |
+| Controller | kg CO₂/day | Viol.* |
 |---|---|---|
 | Fixed setpoint | 18.96 | 0% |
-| Occupancy setback | 11.10 | 0% |
-| Carbon heuristic | 9.31 | 0% |
+| Setback, 24 °C (untuned) | 11.10 | 0% |
+| **Best tuned rule** (25.9 °C) | 8.52 | 0.7% |
 | DQN | 8.52 | 7.6% |
-| **PPO** | **8.26** | 5.5% |
+| **PPO (tuned)** | **8.21** | 5.2% |
 | Oracle (DP) | 7.83 | 3.7% |
 
-<span class="muted">*share of occupied 15-min steps outside 23–26 °C</span>
+<span class="muted">*occupied 15-min steps outside 23–26 °C</span>
 
 </div>
 <div>
 
-<div class="big">−11.3%</div>
+Tuning one setpoint: **−23%** carbon
 
-carbon vs carbon heuristic
-95% CI [−12.0, −10.7]%, p < 0.001
+PPO vs the best tuned rule:
 
-**71%** of the gap from the heuristic to the oracle
+<div class="big">−3.7%</div>
 
-Cost −11.8% as well
+carbon, 95% CI [−4.0, −3.2]%
+**reward +1.1%** (p = 0.03), cost −4.1%
 
-Price: 0.10 °C·h/day of discomfort, mostly 17:00–18:30 and the 13:00–15:00 heat peak
+19% of the gap to the oracle closed
+
+Price: more frequent but tiny violations (0.08 °C·h/day)
 
 </div>
 </div>
@@ -162,35 +164,41 @@ Price: 0.10 °C·h/day of discomfort, mostly 17:00–18:30 and the 13:00–15:00
 
 ![h:440](../../results/figures/learning_curves.png)
 
-PPO passes the carbon heuristic at ~300k steps; all 5 seeds land within ±1.2% of each other on test carbon. DQN reaches a similar level but collapses intermittently.
+PPO plateaus by ~700k steps; its 5 seeds land within 1.3% on test carbon. It ends **level with the tuned rule** on these 16 days and slightly ahead on 60 validation and 92 test days: a small edge.
 
 <!-- Sean (Brandon for PPO stability questions) -->
 
 ---
 
-## What did PPO learn? Ride the top of the comfort band
+## What did PPO learn? Ride the band edge, cool a little in carbon dips
 
 ![h:560](../../results/figures/day_trace.png)
 
-<!-- Sean: PPO holds ~25.7 °C, no pre-cooling. Heuristic over-cools in low-CI dips; with τ = 6 h that "stored" cooling leaks back through the walls. -->
+<!-- Sean: Both hold ~25.7-25.9 °C. PPO cools slightly more in the 10:00 and 12:00-15:00 CI dips, then coasts to 26 °C as CI rises. Effective CI paid: PPO 0.115 vs rule 0.118 kg/kWh. -->
 
 ---
 
-## Is it really carbon-aware? Mostly not, and here is how we know
+## Where is the remaining headroom? Not in the carbon signal
 
 <div class="cols wide-left">
 <div>
 
-![w:720](../../results/figures/ablations.png)
+| Oracle variant (test) | Reward | kg CO₂ |
+|---|---|---|
+| Full foresight | −13.07 | 7.83 |
+| No carbon foresight | −13.15 | 8.01 |
+| **No occupancy foresight** | **−14.08** | 7.92 |
+| *Best tuned rule* | *−13.88* | *8.52* |
+| *PPO (tuned)* | *−13.72* | *8.21* |
 
 </div>
 <div>
 
-- **Removing CI from the state:** carbon barely changes (+1.3%)
-- **Effective CI paid:** PPO 0.117 ≈ heuristic 0.116 kg/kWh; the oracle pays **0.109**
-- **Removing time features** hurts most: the policy leans on the clock
-- PPO's gain is **energy reduction** (−12% kWh), not time-shifting
-- With τ = 6 h and a 3 K band, the room is a leaky battery: little room to shift
+- Knowing future CI is worth **0.08** reward/day
+- Knowing when people arrive and leave is worth **~1.0**
+- Tuning drove every carbon-reactive rule to **ignore CI**
+- Removing CI from PPO's state costs only +1.3% carbon
+- One room with τ = 6 h is a **leaky battery**: little to shift
 
 </div>
 </div>
@@ -199,11 +207,11 @@ PPO passes the carbon heuristic at ~300k steps; all 5 seeds land within ±1.2% o
 
 ---
 
-## The trade-off is a choice, not a fact
+## At matched comfort, it's close to a tie
 
 ![h:430](../../results/figures/pareto.png)
 
-λ_K sweeps from 4.6 kg at 8 °C·h/day to 9.7 kg at ≈0 discomfort. At strict comfort (λ_K = 50) **the heuristic is not beaten**.
+Inside the comfort band, the PPO front and the setpoint sweep overlap. PPO's extra savings come from **accepting more discomfort**.
 
 <!-- Sean presents; Patrick links to RAI -->
 
@@ -211,11 +219,11 @@ PPO passes the carbon heuristic at ~300k steps; all 5 seeds land within ±1.2% o
 
 ## Responsible AI
 
-- **Who sets λ?** The weights encode whose comfort is traded for carbon. The Pareto front makes that trade visible to occupants *and* operators.
-- **Specification gaming:** the agent learned to sit at the edge of the comfort band. Comfort is charged only when occupied, so a faulty sensor invites exploitation. We **score comfort on true occupancy**, never the sensor.
-- **Comfort is a distribution:** ~43% of violating steps fall at 17:00–18:30. PPO eases off as the day ends, so **late leavers** bear the discomfort. The mean hides this.
-- **Transparency:** the policy is simple enough to explain ("hold ~25.7 °C while occupied") → human override and fallback rules.
-- **Carbon accounting:** average vs marginal emission factors can change the conclusion.
+- **Who sets λ?** The weights decide whose comfort is traded for carbon. The Pareto front makes that trade visible.
+- **Specification gaming:** PPO sits at the edge of the band. Comfort is charged only when occupied, so a faulty sensor invites exploitation; we **score comfort on true occupancy**.
+- **Comfort is a distribution:** **53%** of PPO's violations fall at 17:00–18:30. **Late leavers** bear them; the mean hides it.
+- **Honest baselines:** an untuned baseline overstated PPO's gain from 3.7% to 11%. Comparing against weak rules is a quiet way to mislead.
+- **Transparency:** a tuned thermostat gets most of the benefit and is fully explainable. That is a legitimate deployment choice.
 
 <!-- Patrick -->
 
@@ -224,12 +232,13 @@ PPO passes the carbon heuristic at ~300k steps; all 5 seeds land within ±1.2% o
 ## Limitations and what is next
 
 - Single zone, simplified thermal model, **synthetic profiles** (UK CI substituted for Singapore)
-- Thermal mass is a weak store, so the shifting headroom is small (oracle CI 0.109 vs 0.117)
+- Small RL margin; DQN, sweep and ablations used default PPO settings
 
 **In progress for the report**
-- Robustness: unseen CI shift (reads signal vs memorises clock), noisy occupancy, price regimes, anti-correlated CI
+- **Occupancy prediction**: where the oracle's headroom actually is
+- Robustness: shifted CI (reads signal vs memorises clock), noisy occupancy, tariff regimes
 - **Constrained PPO** (Lagrangian): comfort as a constraint, not a weight
-- Battery storage action, to give the agent a real lever for load shifting
+- **Battery storage**: a real lever for carbon shifting
 
 <!-- Patrick -->
 
@@ -237,10 +246,10 @@ PPO passes the carbon heuristic at ~300k steps; all 5 seeds land within ±1.2% o
 
 ## Takeaways
 
-1. PPO beats a tuned carbon-aware rule by **11% carbon** and gets **71%** of the way to the DP optimum
-2. But it wins by **using less energy at the edge of comfort**, not by chasing low-carbon hours
-3. Honest evaluation (oracle, ablations, effective CI) is what reveals the difference
-4. The carbon–comfort trade-off is a **value judgement**; we expose it rather than hide it
+1. **Tune the baseline first:** one setpoint gives −23% carbon; skipping this inflated our RL gain about 3×
+2. Tuned PPO still wins, **−3.7% carbon and +1.1% reward**, with a little genuine load-shifting
+3. The carbon signal is worth little in one room; **occupancy foresight** is the real headroom
+4. An oracle plus fair tuning is what reveals all of this
 
 <br>
 

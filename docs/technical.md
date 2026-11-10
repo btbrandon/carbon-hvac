@@ -57,17 +57,23 @@ Real data can replace any series by placing `data/{t_out,price,ci}.csv` (columns
 | Controller | File | Idea |
 |---|---|---|
 | Fixed setpoint | `baselines.py` | Ideal staged thermostat at 24 °C, 24/7 |
-| Occupancy setback | `baselines.py` | 24 °C from 07:00 on workdays or when the sensor reads occupied, otherwise off |
-| Carbon heuristic | `baselines.py` | Setback, plus cool to 23.5 °C when CI < θ and drift to 25.5 °C when CI ≥ θ; pre-cool from 05:00. θ tuned on train (`results/heuristic.json`) |
-| PPO / DQN | `scripts/train.py` | stable-baselines3, MLP 64×64, hyperparameters in the file and in each run's `config.json` |
+| Occupancy setback | `baselines.py` | Setpoint from `lead_hours` before 08:00 on workdays or when the sensor reads occupied, otherwise off |
+| Carbon heuristic | `baselines.py` | Setback that cools to `low` when CI < θ and drifts to `high` when CI ≥ θ, optional pre-cool |
+| Carbon-proportional | `baselines.py` | Setback with setpoint = base + gain·(CI − median CI) |
+| PPO / DQN | `scripts/train.py` | stable-baselines3, MLP 64×64; `--hp key=value` overrides; settings saved in each run's `config.json` |
 | Oracle | `oracle.py` | Backward induction over a 0.05 °C grid (401 points × 96 steps × 5 actions) with perfect foresight; one-step lookahead at execution |
+
+**Tuning (same budget rules for every controller).** `eval_baselines.py` grid-searches all three rules (972 settings) on 60 training days, maximising mean reward. It also picks a matched-comfort variant (lowest carbon with ≤1% occupied-step violations). Chosen settings go to `results/baselines_tuned.json`; all three rules converge to setback at ≈25.9 °C. `tune_ppo.sh` tries 12 PPO settings × 2 seeds × 1.5M steps on the same 60 days. `select_ppo.py` picks the best by mean validation reward (`n_steps=768`), which is then trained with 5 seeds as tag `main_tuned`. No tuning run sees the test period.
 
 ## 5. Reproducing results
 
 ```bash
 pytest                                   # simulator validation (§5 of report)
-python scripts/eval_baselines.py         # tune heuristic, baselines + oracle on test
+python scripts/eval_baselines.py         # tune all rules on train, evaluate rules + oracle on test (~1 min)
 scripts/run_all.sh                       # 48 runs: main, λK sweep, ablations (~30 min on 8 cores)
+scripts/tune_ppo.sh                      # PPO hyperparameter search, validation only (~25 min)
+python scripts/select_ppo.py             # rank configs -> results/ppo_selected.json
+# then: train.py --tag main_tuned --hp n_steps=768 --steps 1500000 for seeds 0-4
 scripts/run_all.sh main -j 4             # just one group
 python scripts/make_figures.py           # results/figures/*.png, results/tables/*
 ```

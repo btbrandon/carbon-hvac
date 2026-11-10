@@ -108,3 +108,10 @@ The slides show the main comparison, the Pareto front and the CI ablation. Robus
 - Slides (`docs/slides/slides.md`), script (`docs/script.md`), §4 draft, `docs/technical.md` written.
 
 **Next (stage 5, after Thursday):** scenario evals (shifted CI, sensor noise, price/CI regimes), Lagrangian PPO, §6 PPO draft, real data if obtained.
+
+**Tue 10 Nov, late (fairness pass)**
+- An untuned "carbon heuristic" made PPO look 11% better. A plain setback at 25.9 °C matched PPO.
+- Tuned all rules (972 settings, train days): all converge to setback at ≈25.9 °C (8.52 kg/day). Tuning PPO (12 configs × 2 seeds) selected n_steps=768.
+- Final: tuned PPO vs best tuned rule: carbon −3.7% [−4.0, −3.2], reward +1.1% (p=0.03), 19% of the gap to the oracle.
+- Oracle decomposition: carbon foresight worth 0.08 reward/day, occupancy foresight ~1.0. The headroom is in occupancy prediction.
+- Slides and script rewritten around this story.

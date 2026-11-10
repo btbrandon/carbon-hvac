@@ -125,8 +125,10 @@ def fig_learning_curves():
     if b is not None:
         for _, row in b.iterrows():
             ax.axhline(row.reward, color=C["muted"], linestyle="--", linewidth=1)
-            ax.text(ax.get_xlim()[1], row.reward, " " + LABEL[row.controller], va="center", fontsize=9, color=C["muted"])
-    ax.set_ylim(-40, None)
+            above = row.controller == "oracle"
+            ax.text(ax.get_xlim()[1], row.reward, " " + LABEL[row.controller], fontsize=9, color=C["muted"],
+                    va="bottom" if above else "top")
+    ax.set_ylim(-20, -12.5)
     ax.xaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda x, _: f"{x/1e3:.0f}k"))
     ax.set_xlabel("Environment steps")
     ax.set_ylabel("Eval return per day (train days)")
