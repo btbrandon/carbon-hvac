@@ -39,7 +39,7 @@ Given the exogenous series (weather, occupancy, price, CI), the transition is de
 
   D_t = 1[o_t]·( max(0, T_{t+1} − 26) + max(0, 23 − T_{t+1}) )·Δt.
 
-- D_t is a hinge penalty, in °C·h, on the comfort band [23, 26] °C, chosen to bracket Singapore guidance for air-conditioned offices [1]. **[TODO: check the exact range in the SS 553 edition we cite before submission.]**
+- D_t is a hinge penalty, in °C·h, on the comfort band [23, 26] °C. This spans the 23–25 °C design range of SS 553 [1] and the 26 °C upper limit commonly applied in Singapore offices.
 - The penalty is charged only when the zone is **truly** occupied (o_t, not the sensor ô_t). §9 explains why this matters for specification gaming.
 - Default weights are λ_E = 0, λ_C = 1 per kg, λ_$ = 0.5 per SGD and λ_K = 5 per °C·h. Carbon is the primary objective and cost a secondary one. λ_K is swept in §8.3 to expose the carbon–comfort trade-off.
 
@@ -82,4 +82,4 @@ The oracle (§6) is given the true o_t and the true future series, which is what
 
 ## References
 
-1. Enterprise Singapore. SS 553:2016 Code of practice for air-conditioning and mechanical ventilation in buildings. Singapore: Enterprise Singapore; 2016.
+1. SPRING Singapore. SS 553:2009 Code of practice for air-conditioning and mechanical ventilation in buildings. Singapore: SPRING Singapore; 2009.
