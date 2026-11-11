@@ -38,7 +38,7 @@ The key observation: carbon and cost are both proportional to energy. So the onl
 
 **Jaylon:** "Our rule-based controllers: a fixed thermostat; a setback that only cools during working hours; a carbon heuristic that cools deeper when the grid is clean and lets the room drift warmer when it's dirty; and a carbon-proportional rule whose setpoint rises smoothly with carbon intensity.
 
-The important part is that every rule was **tuned**: 972 settings in total, scored on training days with exactly the same reward PPO maximises. Our first results used untuned rules, and PPO looked 11% better. Once the rules were tuned fairly, most of that gap disappeared. We'll come back to that."
+The important part is that every rule was **tuned**: 972 settings in total, scored on training days with exactly the same reward PPO maximises. Our first results used a carbon heuristic that was only partly tuned, and PPO looked 11% better. Once the rules were tuned fairly, most of that gap disappeared. We'll come back to that."
 
 **Brandon:** "PPO got the same treatment: we searched 12 hyperparameter settings with 2 seeds each on training days, then trained the winner, a larger rollout batch, with 5 fresh seeds. And the oracle: since the dynamics are deterministic given the weather, we solve each day exactly by backward induction with perfect foresight. That's the best any controller could possibly do."
 
@@ -77,11 +77,11 @@ So in this building **the carbon signal isn't the bottleneck; predicting occupan
 
 "Five points.
 
-1. **The weights are a value choice.** Who sets them: facility managers or occupants? The Pareto front makes the choice visible.
-2. **Specification gaming.** PPO sits right at the edge of what the reward allows. Comfort only counts when the room is occupied, so a faulty sensor could be exploited. That's why we always *score* comfort on true occupancy.
+1. **The weights are a value choice.** The reward is a multi-attribute utility function, and nothing in the physics sets its weights. Who sets them: facility managers or occupants? The Pareto front makes the choice visible.
+2. **Specification gaming.** PPO sits right at the edge of what the reward allows. Comfort only counts when the room is occupied, so a faulty sensor could be exploited: reward over-optimisation. The mitigation is independent evaluation, and that's why we always *score* comfort on true occupancy.
 3. **Distribution.** More than half of PPO's violations happen between 5 and 6:30 pm, so the people who stay late bear the discomfort. An average hides that.
-4. **Honest baselines.** Our own first result overstated the gain about threefold because the baseline wasn't tuned, and most of what remained came from three holidays a calendar would handle. Weak baselines are a quiet way to mislead, so we report the fair comparison and where the gain comes from.
-5. **Transparency.** A tuned thermostat gets most of the benefit and anyone can explain it. Choosing it over RL can be the responsible deployment choice."
+4. **Honest baselines.** Our own first result overstated the gain about threefold because the baseline was only partly tuned, and that first number is exactly the kind of anchor that sticks. Most of what remained came from three holidays a calendar would handle. Weak baselines are a quiet way to mislead, so we report the fair comparison and where the gain comes from.
+5. **Transparency.** A tuned thermostat gets most of the benefit and anyone can explain it. Choosing it over RL can be the responsible deployment choice. Where RL is deployed, a human stays in command, with an occupant override and a fallback to the rule."
 
 ## 13. Limitations / next · Patrick · 13:45–14:30
 

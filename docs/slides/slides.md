@@ -197,7 +197,7 @@ Price and CI are nearly uncorrelated here (r = −0.07): the cheapest hour is no
 
 <div class="kicker">Controllers</div>
 
-## Every controller gets the same tuning budget rules
+## Rules and PPO are tuned under one protocol
 
 | Controller | Behaviour | Tuned |
 |---|---|---|
@@ -325,13 +325,13 @@ All tuning on training days only (972 rule settings), scored with the reward PPO
 <div class="card">
 
 ### Who sets λ?
-The weights decide whose comfort is traded for carbon. The Pareto front makes that trade visible.
+The reward is a utility function: its weights decide whose comfort is traded for carbon. The Pareto front makes that trade visible.
 
 </div>
 <div class="card">
 
 ### Specification gaming
-Comfort is charged only when occupied, so a faulty sensor invites exploitation. We score comfort on true occupancy.
+Comfort is charged only when occupied, so a faulty sensor invites reward over-optimisation. We score comfort on true occupancy.
 
 </div>
 <div class="card">
@@ -343,13 +343,13 @@ Comfort is charged only when occupied, so a faulty sensor invites exploitation. 
 <div class="card">
 
 ### Honest baselines
-An untuned rule inflated PPO's gain to 11%; a holiday calendar shrinks it to 0.9%. Check where a gain comes from.
+A partly tuned rule inflated PPO's gain to 11%, an anchor that fair tuning removed; a holiday calendar shrinks it to 0.9%. Check where a gain comes from.
 
 </div>
 <div class="card">
 
 ### Transparency
-A tuned thermostat gets most of the benefit and anyone can explain it. That is a legitimate choice.
+A tuned thermostat gets most of the benefit and anyone can explain it. That is a legitimate choice. RL would need a human override.
 
 </div>
 </div>
