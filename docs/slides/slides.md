@@ -337,7 +337,7 @@ Comfort is charged only when occupied, so a faulty sensor invites reward over-op
 <div class="card">
 
 ### Comfort is a distribution
-53% of PPO's violations fall between 17:00 and 18:30. Late leavers bear them; the mean hides it.
+More than half of PPO's violations fall between 17:00 and 18:30. Late leavers bear them; the mean hides it.
 
 </div>
 <div class="card">
