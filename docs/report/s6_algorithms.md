@@ -33,7 +33,7 @@ The clip removes any incentive to move the probability ratio outside [1−ε, 1+
 
 Here λ trades bias (λ → 0) against variance (λ → 1). The full loss adds a value-function regression term and an entropy bonus, −L^CLIP + c_v·(V_φ − V^target)² − c_e·H[π_θ], which keeps exploration alive early in training.
 
-**Why PPO.** PPO is on-policy and therefore sample-hungry. That is a poor trade on real hardware, but our simulator runs at about 36,000 steps/s, so a 1.5M-step run takes under 5 minutes. In return we get stable, monotone learning and native support for discrete actions.
+**Why PPO.** PPO is on-policy and therefore sample-hungry. That is a poor trade on real hardware, but our simulator runs at about 36,000 steps/s, so a 1.5M-step run takes under 5 minutes. In return we get stable, smooth learning and native support for discrete actions.
 
 **Implementation.** We use stable-baselines3 2.9 [4]:
 - **Networks:** separate actor and critic MLPs, each with two hidden layers of 64 tanh units. The actor ends in a 5-way softmax over power levels.
@@ -96,6 +96,8 @@ Two observations matter for interpreting the main results.
 
 1. **The spread across configurations (≈0.3) is only about three times the seed-to-seed spread (≈0.1).** Picking the best of 12 therefore risks a winner's-curse bias. Retraining with 5 fresh seeds and testing once on held-out days is our guard against it.
 2. **The two worst single changes, γ = 0.995 and GAE λ = 0.98, both lengthen the credit-assignment horizon. Larger networks did not help either; a longer rollout did.** This is consistent with a problem whose relevant planning horizon is under a day and whose reward is dense. The remaining differences are within seed noise.
+
+Even under this protocol, an aggregate win can hide where it comes from: §8.1 shows that most of PPO's test-period advantage over the tuned rule arises on three public holidays, so we also report a day-type breakdown.
 
 **Table 6.A (appendix)** Final hyperparameters.
 

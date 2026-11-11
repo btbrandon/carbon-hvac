@@ -31,7 +31,7 @@ That gives 8 current and 12 forecast features, 20 in total. Each feature is affi
 
   T_{t+1} = T_eq + (T_t − T_eq)·exp(−Δt / RC),  T_eq = T_out + R·( Q_int(o_t) + Q_sol − COP(T_out)·P_t ).
 
-Given the exogenous series (weather, occupancy, price, CI), the transition is deterministic. Stochasticity enters only through the day drawn, the initial temperature T_0 ~ U(25.5, 28) °C, and, in the robustness experiments, sensor and forecast errors.
+Given the exogenous series (weather, occupancy, price, CI), the transition is deterministic. Stochasticity enters only through the day drawn, the initial temperature T_0 ~ U(25.5, 28) °C, and, when enabled for the robustness scenarios (§7.2), sensor and forecast errors.
 
 **Reward.** The reward is the negative of a weighted cost:
 
@@ -53,7 +53,9 @@ The zone's only storage is its thermal mass, C = 15 kWh/K. Pre-cooling by 3 K ba
 
 We therefore report two quantities that separate energy reduction from shifting:
 - the **effective CI paid**, Σ CI_t·E_t / Σ E_t;
-- the **share of HVAC energy consumed in below-median-CI steps**.
+- the **share of HVAC energy consumed in below-median-CI steps** (load shift).
+
+Both are ratios, so they are energy-weighted over all test days (§7.2). Load shift has no natural 50% baseline here: any controller that cools only in office hours already places about 60% of its energy below the daily median, because the midday solar dip falls inside the working day. It is therefore read relative to the tuned rule and the oracle.
 
 In our data the correlation between price and CI is r = −0.07. Price peaks with afternoon demand, while CI falls with midday solar and windy periods, so the cost-optimal and carbon-optimal schedules genuinely differ.
 
@@ -63,9 +65,9 @@ The true state includes the occupancy o_t and the future exogenous values, neith
 
 We approximate it by **feature augmentation**:
 - the forecasts stand in for the hidden future exogenous state;
-- the time features let the policy infer the occupancy *schedule*, which carries most of the information a noisy sensor would.
+- the time features let the policy infer the occupancy *schedule*, which covers ordinary workdays. On irregular days, such as public holidays, only the sensor reveals that nobody is coming, and this turns out to drive much of PPO's measured advantage (§8.1).
 
-The main experiments use a perfect sensor and perfect forecasts (ε = 0, zero forecast error); robustness to both is tested in §8.5. A recurrent policy is the natural next step for heavier noise (§10).
+The main experiments use a perfect sensor and perfect forecasts (ε = 0, zero forecast error); both kinds of noise are configurable for the robustness scenarios (§7.2). A recurrent policy is the natural next step for heavier noise (§10).
 
 The oracle (§6) is given the true o_t and the true future series, which is what makes it an upper bound. Removing each piece of its foresight in turn shows that **occupancy foresight, not carbon foresight, accounts for almost all of the oracle's advantage** over the best rule (§8). This identifies the hidden variable that matters most.
 
