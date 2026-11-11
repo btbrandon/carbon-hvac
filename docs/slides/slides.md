@@ -220,7 +220,7 @@ All tuning on training days only (972 rule settings), scored with the reward PPO
 
 <div class="kicker">Main result</div>
 
-## Tuning matters most; PPO adds a little more
+## Tuning matters most; PPO's extra gain is small
 
 <div class="cols wide-left">
 <div>
@@ -241,9 +241,9 @@ All tuning on training days only (972 rule settings), scored with the reward PPO
 
 <div class="stat"><div class="n dark">−23%</div><div class="l">carbon from tuning one setpoint</div></div>
 
-<div class="stat"><div class="n">−3.7%</div><div class="l">PPO vs best tuned rule, 95% CI [−4.0, −3.2]<br>reward +1.1% (p = 0.03), cost −4.1%<br>19% of the reward gap to the oracle closed</div></div>
+<div class="stat"><div class="n">−3.7%</div><div class="l">PPO vs best tuned rule, 95% CI [−4.0, −3.2]<br>reward +1.1% (p = 0.03), cost −4.1%</div></div>
 
-<div class="muted">The price: more frequent but tiny comfort violations (0.08 °C·h/day)</div>
+<div class="stat"><div class="n dark">72%</div><div class="l">of that saving is from 3 public holidays, when the rule cools an empty office. Other 89 days: −1.1% carbon, reward −1.6%</div></div>
 
 </div>
 </div>
@@ -258,7 +258,7 @@ All tuning on training days only (972 rule settings), scored with the reward PPO
 
 ![h:400](../../results/figures/learning_curves.png)
 
-<div class="caption">PPO plateaus by ~700k steps and its 5 seeds land within 1.3% on test carbon. On these 16 training days it ends level with the tuned rule; it is slightly ahead on validation and test.</div>
+<div class="caption">PPO's 5 seeds settle by 0.75–1.3M steps and land within 1.3% on test carbon. On these 16 training days it ends level with the tuned rule. DQN drops out repeatedly.</div>
 
 <!-- Sean (Brandon for PPO stability questions) -->
 
@@ -270,7 +270,7 @@ All tuning on training days only (972 rule settings), scored with the reward PPO
 
 ![h:500](../../results/figures/day_trace.png)
 
-<!-- Sean: Both hold ~25.7-25.9 °C. PPO cools slightly more in the 10:00 and 12:00-15:00 CI dips, then coasts to 26 °C as CI rises. Effective CI paid: PPO 0.115 vs rule 0.118 kg/kWh. -->
+<!-- Sean: Both hold ~25.7-25.9 °C. PPO cools slightly more in the 10:00 and 12:00-15:00 CI dips, then coasts to 26 °C as CI rises. Effective CI paid (energy-weighted): PPO 0.162 vs rule 0.164 vs oracle 0.159 kg/kWh; 63% vs 60% of energy in below-median-CI hours. -->
 
 ---
 
@@ -294,9 +294,9 @@ All tuning on training days only (972 rule settings), scored with the reward PPO
 
 <div class="stat"><div class="n dark">0.08</div><div class="l">reward/day from knowing future carbon intensity</div></div>
 
-<div class="stat"><div class="n">~1.0</div><div class="l">reward/day from knowing when people arrive and leave</div></div>
+<div class="stat"><div class="n">~1.0</div><div class="l">reward/day from knowing when people arrive and leave (0.65 on ordinary days)</div></div>
 
-<div class="muted">Tuning switched off the rules' carbon-reactive features, and removing CI from PPO's state costs only 1.3% carbon. One room with τ = 6 h is a leaky battery.</div>
+<div class="muted">PPO's own win is occupancy too: it stays off on holidays. Removing CI from its state costs 1.3% carbon (not significant). One room with τ = 6 h is a leaky battery.</div>
 
 </div>
 </div>
@@ -307,11 +307,11 @@ All tuning on training days only (972 rule settings), scored with the reward PPO
 
 <div class="kicker">Trade-off</div>
 
-## At matched comfort, it is close to a tie
+## At matched comfort, the tuned rule wins
 
-![h:400](../../results/figures/pareto.png)
+![h:400](../../results/figures/pareto_normal_days.png)
 
-<div class="caption">Inside the comfort band the PPO front and the setpoint sweep overlap. PPO's extra savings come from accepting more discomfort.</div>
+<div class="caption">89 ordinary days. At strict comfort every PPO setting is beaten by the rule. PPO only wins at 0.08–0.1 °C·h/day, a band the thermostat skips (25.9 °C → 26.0 °C jumps from 0.7% to 35% violations).</div>
 
 <!-- Sean presents; Patrick links to RAI -->
 
@@ -343,7 +343,7 @@ Comfort is charged only when occupied, so a faulty sensor invites exploitation. 
 <div class="card">
 
 ### Honest baselines
-An untuned baseline inflated PPO's gain from 3.7% to 11%. Weak baselines quietly mislead.
+An untuned rule inflated PPO's gain to 11%; a holiday calendar shrinks it to 0.9%. Check where a gain comes from.
 
 </div>
 <div class="card">
@@ -393,7 +393,7 @@ A tuned thermostat gets most of the benefit and anyone can explain it. That is a
 ## Takeaways
 
 1. **Tune the baseline first.** One setpoint gives −23% carbon; skipping this inflated our RL gain about threefold.
-2. **Tuned PPO still wins**, by 3.7% carbon and 1.1% reward, with a little genuine load shifting.
+2. **Tuned PPO wins by 3.7% carbon**, mostly by staying off on holidays; on ordinary days it is ~1%, paid for in comfort.
 3. **In one room the carbon signal is worth little.** Occupancy foresight is the real headroom.
 4. **An oracle plus fair tuning** is what reveals all of this.
 
