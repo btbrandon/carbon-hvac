@@ -48,9 +48,9 @@ Effective CI and load shift are the two metrics that separate *carbon-aware* con
 | Scenario | What changes | Purpose | Status |
 |---|---|---|---|
 | Main | Held-out test period, perfect sensor and forecasts | Main comparison (§8.1–8.4, 8.6) | Done |
-| Shifted CI | CI profile shifted by k hours (`ci_shift_hours`) | Does the policy read the CI signal or rely on the clock? | Pending (§8.5) |
-| Sensor noise | Occupancy-sensor flip probability ε ∈ {0.1, 0.2} (`occ_flip_prob`) | Robustness of the POMDP approximation (§4.3) | Pending (§8.5) |
-| Price / CI regimes | Flat or time-of-use price; flat or price-anticorrelated CI | Isolates carbon-awareness from cost-awareness | Pending (§8.5) |
+| Shifted CI | CI profile shifted by k hours (`ci_shift_hours`) | Does the policy read the CI signal or rely on the clock? | Rules and oracle (§8.5) |
+| Sensor noise | Occupancy-sensor flip probability ε ∈ {0.1, 0.2} (`occ_flip_prob`) | Robustness of the POMDP approximation (§4.3) | Rules and oracle (§8.5) |
+| Price / CI regimes | Flat or time-of-use price; flat or price-anticorrelated CI | Isolates carbon-awareness from cost-awareness | Rules and oracle (§8.5) |
 
 **Compute.** The environment runs at about 36,000 steps/s on one CPU core. A PPO run takes about 2.6 min at 800k steps and 4.7 min at 1.5M steps; a DQN run about 6.8 min at 800k steps. The experiment grid (main PPO and DQN, the λ_K sweep and the four ablations; 48 runs) took 26 min wall-clock with 7 parallel jobs (2.8 CPU-hours), the PPO hyperparameter search (24 runs) about 25 min, and the 5 tuned PPO seeds about 5 min. Rule tuning (972 configurations) and the oracle evaluations take about 1 min each. In total, about 5 CPU-hours on an 8-core Apple Silicon laptop, CPU only.
 
