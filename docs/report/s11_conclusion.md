@@ -1,0 +1,5 @@
+# 11. Conclusion
+
+*Author: Patrick. Target ≈ 0.2 page, one paragraph. No new material and no citations; every number is taken from §8.*
+
+We posed cooling one office zone as an MDP charging carbon, cost and discomfort, and compared PPO and DQN with rules tuned under PPO's protocol and a perfect-foresight oracle on 92 held-out days. Against the best tuned rule, PPO cut carbon by 3.7% while comfort violations rose from 0.7% to 5.2% of occupied time. Three public holidays supplied 72% of that saving; against a holiday-calendar rule it is 0.9%. Even the oracle gains only about 2% of carbon from timing; on ordinary days, occupancy foresight is worth about eight times as much reward as carbon foresight. The building, not the controller, is the limit; the value lies in knowing who is present. Discomfort is small on average but falls on late leavers and early arrivals; for this building the calendar rule is the responsible choice. Learning earns its place where a building offers a real lever, such as storage.
