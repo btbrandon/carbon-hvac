@@ -1,6 +1,6 @@
 # 2. Introduction
 
-*Author: Patrick. Target about 0.75 page in the body. Literature search and first draft done with AI assistance from Claude; declare this in the AI-use statement. References are numbered in order of first appearance, and §3 continues the numbering, so these become references 1 to 7 of the merged report. [CHECK at merge: add robustness (§8.5) and constrained PPO (§8.7) to the contributions only if they are finished.]*
+*Author: Patrick. Target about 0.75 page in the body. Literature search and first draft done with AI assistance from Claude; declare this in the AI-use statement. References are numbered in order of first appearance, and §3 continues the numbering, so these become references 1 to 7 of the merged report. Contributions checked against the merged §8 on 15 Nov 2026: robustness (§8.5) was run for the rules and oracle only, and constrained PPO (§8.7) was not completed, so neither is listed as a contribution. The extension we did complete, the oracle foresight decomposition (§8.7), is.*
 
 Buildings and their construction accounted for 28% of global energy consumption in 2024, and running buildings emitted about 26% of energy-related CO₂ [1]. Air conditioners and fans use nearly a fifth of the electricity in buildings, and without efficiency gains the energy used for cooling will more than triple by 2050 [2]. In a typical Singapore office, cooling takes about 60% of the electricity [3].
 
@@ -14,8 +14,8 @@ We model one office zone with a first-order thermal network and pose its cooling
 
 - §4, §5 and §7 give a simulator and MDP on which PPO, DQN and exact dynamic programming solve the same problem, and two metrics, effective carbon intensity and load shift, that separate timing from energy reduction.
 - §6.4 tunes the rules and PPO under one protocol. Before we did this, PPO's carbon saving appeared to be 11.3%, about three times the 3.7% it achieves against a tuned rule.
-- §8.1 shows, with paired intervals over seeds, that three public holidays account for 72% of PPO's saving over the best rule.
-- §8.1 and §8.3 find that knowing future occupancy is worth about eight times as much reward as knowing future carbon intensity, and that at matched comfort the tuned rule beats PPO.
+- §8.1 shows, with paired intervals over seeds, that three public holidays account for 72% of PPO's saving over the best rule, and §8.3 that at matched comfort the tuned rule beats PPO.
+- §8.7, our extension, splits the oracle's foresight and finds that on ordinary days knowing future occupancy is worth about eight times as much reward as knowing future carbon intensity.
 - §9 asks who sets the comfort weight, who bears the discomfort, and how a controller could game the occupancy sensor.
 
 Against the best tuned rule, PPO cuts carbon by 3.7% while the share of occupied time outside the comfort band rises from 0.7% to 5.2%. On ordinary days its whole advantage is timing, worth about 1% of carbon. Even a planner with perfect foresight gains only about 2% of carbon from timing, because the zone's thermal mass stores little cooling.
