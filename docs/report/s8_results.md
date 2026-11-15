@@ -139,7 +139,7 @@ All results above are on held-out months, so they already measure generalisation
 
 **Figure 8.5** Test day 302 (a Friday): indoor temperature, HVAC power and grid CI for tuned PPO and the tuned setback. Shading: occupied hours.
 
-On a typical workday the two controllers look alike. Both leave the HVAC off overnight, start at the same time before the 08:00 arrival, and hold the zone near the top of the comfort band; neither pre-cools overnight. With a 6-hour time constant, cooling stored before dawn leaks back through the envelope before occupants arrive, which is also why tuning switched off the carbon heuristic's pre-cooling (§6.1).
+On a typical workday the two controllers look alike. Both leave the HVAC off overnight, start at the same time before the 08:00 arrival, and hold the zone near the top of the comfort band; neither pre-cools overnight. With a 6-hour time constant, cooling stored before dawn leaks back through the envelope before occupants arrive, which is also why tuning kept only the shortest and shallowest pre-cooling in the carbon heuristic's grid (from 06:00, to 25.5 °C, when CI is low) and its matched-comfort variant drops pre-cooling altogether (§6.1, Table 6.B).
 
 The differences are small but systematic. PPO cools a little harder, with short bursts at 75% power, during the 10:00 and 12:00–15:00 CI dips, reaching about 25.6 °C where the rule holds 25.9 °C, then coasts up to 26 °C as CI rises towards the evening. It also lets the zone drift just above 26 °C around 09:00 and again near 17:00–18:00. Those excursions are where its 5.2% violations come from, and they fall on early arrivals and late leavers (§9).
 
